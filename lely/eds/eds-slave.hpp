@@ -3,7 +3,7 @@
 #define CO_SDEV_STRING(s)	s
 
 const struct co_sdev MySlave1 = {
-	.id = 0x02,
+	.id = 0xff,
 	.name = NULL,
 	.vendor_name = CO_SDEV_STRING("Lely Industries N.V."),
 	.vendor_id = 0x00000360,

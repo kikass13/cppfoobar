@@ -11,6 +11,9 @@ find_package(PkgConfig REQUIRED)
 ### these calls create special `PkgConfig::<MODULE>` variables
 pkg_check_modules(lely-pkg REQUIRED IMPORTED_TARGET liblely-coapp)
 
+include_directories(
+    ${lely-pkg_INCLUDE_DIRS}
+)
 #############################################################################
 ### slave
 #########################
@@ -32,17 +35,53 @@ set_target_properties(slave PROPERTIES
 #############################################################################
 ### slave using static eds compilation
 #########################
+#set(SOURCE_FILES
+#    ${CMAKE_CURRENT_SOURCE_DIR}/slave_staticEds.cpp
+#)
+#add_executable(slave_static
+#    ${SOURCE_FILES}
+#)
+#target_link_libraries(slave_static PUBLIC
+#    PkgConfig::lely-pkg
+#)
+#set_target_properties(slave_static PROPERTIES
+#    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+#    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+#    RUNTIME_OUTPUT_DIRECTORY ""
+#)
+
+#############################################################################
+### master
+#########################
 set(SOURCE_FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/slave_staticEds.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/master.cpp
 )
-add_executable(slave_static
+add_executable(master 
     ${SOURCE_FILES}
 )
-target_link_libraries(slave_static PUBLIC
+target_link_libraries(master PUBLIC
     PkgConfig::lely-pkg
 )
-set_target_properties(slave_static PROPERTIES
+set_target_properties(master PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
     RUNTIME_OUTPUT_DIRECTORY ""
 )
+
+#############################################################################
+### master using static eds compilation
+#########################
+#set(SOURCE_FILES
+#    ${CMAKE_CURRENT_SOURCE_DIR}/master_staticEds.cpp
+#)
+#add_executable(master_staticEds 
+#    ${SOURCE_FILES}
+#)
+#target_link_libraries(master_staticEds PUBLIC
+#    PkgConfig::lely-pkg
+#)
+#set_target_properties(master_staticEds PROPERTIES
+#    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+#    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+#    RUNTIME_OUTPUT_DIRECTORY ""
+#)

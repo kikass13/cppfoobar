@@ -17,6 +17,11 @@
 /// and embedded example can be found here:
 /// https://gitlab.com/lely_industries/lpc17xx/-/blob/master/src/main.c
 
+/// kikass13:
+/// include generated (convertEds2Hpp) slave definition
+/// instead of loading the .eds file dynamically at runtime
+#include "eds/eds-slave.hpp"
+
 using namespace lely;
 
 class MySlave : public canopen::BasicSlave {
@@ -33,6 +38,7 @@ class MySlave : public canopen::BasicSlave {
       uint32_t val = (*this)[0x4000][0];
       // Copy it to object 4001:00, so that it will be sent by the next TPDO.
       (*this)[0x4001][0] = val;
+      std::cout << "[Slave] OnWrite() " << val << std::endl;
     }
   }
 };
@@ -62,8 +68,11 @@ int main() {
   chan.open(ctrl);
 
   // Create a CANopen slave with node-ID 2.
-  MySlave slave(timer, chan, "cpp-slave.eds", "", 2);
-  
+  //MySlave slave(timer, chan, "eds/cpp-slave.eds", "", 2);
+  /// kikass13:
+  /// create Slave object using static generated eds device destription obect 
+  MySlave slave(timer, chan, &MySlave1, 2);
+
   // Create a signal handler.
   io::SignalSet sigset(poll, exec);
   // Watch for Ctrl+C or process termination.
