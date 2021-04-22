@@ -85,3 +85,21 @@ set_target_properties(master PROPERTIES
 #    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
 #    RUNTIME_OUTPUT_DIRECTORY ""
 #)
+
+#############################################################################
+### master slave with user defined channels
+#########################
+set(SOURCE_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/userChannelMasterSlave.cpp
+)
+add_executable(userChannelExample 
+    ${SOURCE_FILES}
+)
+target_link_libraries(userChannelExample PUBLIC
+    PkgConfig::lely-pkg
+)
+set_target_properties(userChannelExample PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+    RUNTIME_OUTPUT_DIRECTORY ""
+)

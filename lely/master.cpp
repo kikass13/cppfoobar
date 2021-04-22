@@ -13,9 +13,18 @@
 using namespace std::chrono_literals;
 using namespace lely;
 
+/// kikass13:
+/// include generated (convertEds2Hpp) slave definition
+/// instead of loading the .eds file dynamically at runtime
+#include "eds/eds-master.hpp"
+
+
 // This driver inherits from FiberDriver, which means that all CANopen event
 // callbacks, such as OnBoot, run as a task inside a "fiber" (or stackful
 // coroutine).
+// we could use LoopDriver (uses <std::threads>)
+// we could create our own variant of "LoopDriver" with out own threading mechanism
+// Use BasicDriver which does not use async "Wait"
 class MyDriver : public canopen::FiberDriver {
  public:
   using FiberDriver::FiberDriver;
@@ -135,7 +144,10 @@ int main() {
   // means every user-defined callback for a CANopen event will be posted as a
   // task on the event loop, instead of being invoked during the event
   // processing by the stack.
-  canopen::AsyncMaster master(timer, chan, "eds/master.dcf", "", 1);
+  //canopen::AsyncMaster master(timer, chan, "eds/master.dcf", "", 1);
+  /// kikass13:
+  /// create Slave object using static generated eds device destription object 
+  canopen::AsyncMaster master(timer, chan, &MyMaster, 1);
 
   // Create a driver for the slave with node-ID 2.
   MyDriver driver(exec, master, 2);
