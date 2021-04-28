@@ -68,10 +68,11 @@ int main() {
   chan.open(ctrl);
 
   // Create a CANopen slave with node-ID 2.
-  //MySlave slave(timer, chan, "eds/cpp-slave.eds", "", 2);
+  // MySlave slave(timer, chan, "eds/cpp-slave.eds", "", 2);
   /// kikass13:
   /// create Slave object using static generated eds device destription object 
-  MySlave slave(timer, chan, &MySlave1, 2);
+  co_dev_t* deviceDescription = MySlave1_init();
+  MySlave slave(timer, chan, deviceDescription, 2);
 
   // Create a signal handler.
   io::SignalSet sigset(poll, exec);

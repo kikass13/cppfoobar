@@ -31,6 +31,12 @@ set_target_properties(slave PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
     RUNTIME_OUTPUT_DIRECTORY ""
 )
+target_compile_options(slave PRIVATE 
+    -Wno-write-strings
+)
+target_compile_definitions(slave PUBLIC 
+    LELY_NO_MALLOC=1
+)
 
 #############################################################################
 ### slave using static eds compilation
@@ -67,6 +73,13 @@ set_target_properties(master PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
     RUNTIME_OUTPUT_DIRECTORY ""
 )
+target_compile_options(master PRIVATE 
+    -Wno-write-strings
+)
+target_compile_definitions(master PUBLIC 
+    LELY_NO_MALLOC=1
+)
+
 
 #############################################################################
 ### master using static eds compilation
@@ -102,4 +115,10 @@ set_target_properties(userChannelExample PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
     RUNTIME_OUTPUT_DIRECTORY ""
+)
+target_compile_options(userChannelExample PRIVATE 
+    -Wno-write-strings
+)
+target_compile_definitions(userChannelExample PUBLIC 
+    LELY_NO_MALLOC=1
 )
