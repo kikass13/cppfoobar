@@ -12,6 +12,16 @@
 
 #include <iostream>
 
+/// kikass13:
+/// include generated (convertEds2Hpp) slave definition
+/// instead of loading the .eds file dynamically at runtime
+#include "eds/eds-master.hpp"
+
+/// kikass13:
+/// include generated (convertEds2Hpp) slave definition
+/// instead of loading the .eds file dynamically at runtime
+#include "eds/eds-slave.hpp"
+
 using namespace lely;
 
 class MySlave : public canopen::BasicSlave {
@@ -40,6 +50,22 @@ class MyDriver : public canopen::FiberDriver {
   using FiberDriver::FiberDriver;
 
  private:
+  // This function gets called when the boot-up process of the slave completes.
+  // The 'st' parameter contains the last known NMT state of the slave
+  // (typically pre-operational), 'es' the error code (0 on success), and 'what'
+  // a description of the error, if any.
+  void
+  OnBoot(canopen::NmtState /*st*/, char es,
+         const std::string& what) noexcept override {
+    if (!es || es == 'L') {
+      std::cout << "slave " << static_cast<int>(id()) << " booted sucessfully"
+                  << std::endl;
+    } else {
+      std::cout << "slave " << static_cast<int>(id())
+                << " failed to boot: " << what << std::endl;
+    }
+  }
+
   // This function gets called every time a value is written to the local object
   // dictionary of the master by an RPDO (or SDO, but that is unlikely for a
   // master), *and* the object has a known mapping to an object on the slave for
@@ -47,6 +73,7 @@ class MyDriver : public canopen::FiberDriver {
   // object index and sub-index of the object on the slave, not the local object
   // dictionary of the master.
   void OnRpdoWrite(uint16_t idx, uint8_t subidx) noexcept override {
+    std::cout << "rpdoWrite()\n";
     if (idx == 0x4001 && subidx == 0) {
       // Obtain the value sent by PDO from object 4001:00 on the slave.
       uint32_t val = rpdo_mapped[0x4001][0];
@@ -64,6 +91,7 @@ class MyDriver : public canopen::FiberDriver {
 void on_next(const timespec* tp, void* arg) {
   (void)tp;
   (void)arg;
+  std::cout << "onNext()\n";
 }
 
 // This function is invoked by a user-defined CAN channel whenever a CAN frame
@@ -155,13 +183,24 @@ int main()
   // means every user-defined callback for a CANopen event will be posted as a
   // task on the event loop, instead of being invoked during the event
   // processing by the stack.
-  canopen::AsyncMaster master(mtimer, mchan, "eds/master.dcf", "", 1);
-
+  // canopen::AsyncMaster master(timer, chan, "eds/master.dcf", "", 1);
+  /// kikass13:
+  /// create Slave object using static generated eds device destription object 
+  std::cout << "Master ... \n";
+  co_dev_t* masterDeviceDescription = MyMaster_init();
+  canopen::AsyncMaster master(mtimer, mchan, masterDeviceDescription, 1);
+  std::cout << " ... Driver\n";
   // Master:Create a driver for the slave with node-ID 2.
   MyDriver driver(exec, master, 2);
 
-  // Create a CANopen slave with node-ID 2.
-  MySlave slave(stimer, schan, "eds/cpp-slave.eds", "", 2);
+   // Create a CANopen slave with node-ID 2.
+  // MySlave slave(timer, chan, "eds/cpp-slave.eds", "", 2);
+  /// kikass13:
+  /// create Slave object using static generated eds device destription object 
+  std::cout << "Slave ... \n";
+  co_dev_t* slaveDeviceDescription = MySlave1_init();
+  MySlave slave(stimer, schan, slaveDeviceDescription, 2);
+  
 
   /// #################
   /// ###### START
@@ -174,6 +213,8 @@ int main()
   for (;;) {
     // Update the internal clocks of the timers.
     auto now = io::clock_monotonic.gettime();
+    // std::chrono::nanoseconds dur = now.time_since_epoch();
+    // std::cout << dur.count() << std::endl;
     stimer.get_clock().settime(now);
     mtimer.get_clock().settime(now);
 

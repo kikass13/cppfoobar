@@ -17,26 +17,26 @@ include_directories(
 #############################################################################
 ### slave
 #########################
-set(SOURCE_FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/slave.cpp
-)
-add_executable(slave 
-    ${SOURCE_FILES}
-)
-target_link_libraries(slave PUBLIC
-    PkgConfig::lely-pkg
-)
-set_target_properties(slave PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    RUNTIME_OUTPUT_DIRECTORY ""
-)
-target_compile_options(slave PRIVATE 
-    -Wno-write-strings
-)
-target_compile_definitions(slave PUBLIC 
-    LELY_NO_MALLOC=1
-)
+#set(SOURCE_FILES
+#    ${CMAKE_CURRENT_SOURCE_DIR}/slave.cpp
+#)
+#add_executable(slave 
+#    ${SOURCE_FILES}
+#)
+#target_link_libraries(slave PUBLIC
+#    PkgConfig::lely-pkg
+#)
+#set_target_properties(slave PROPERTIES
+#    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+#    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+#    RUNTIME_OUTPUT_DIRECTORY ""
+#)
+#target_compile_options(slave PRIVATE 
+#    -Wno-write-strings
+#)
+#target_compile_definitions(slave PUBLIC 
+#    LELY_NO_MALLOC=1
+#)
 
 #############################################################################
 ### slave using static eds compilation
@@ -59,26 +59,26 @@ target_compile_definitions(slave PUBLIC
 #############################################################################
 ### master
 #########################
-set(SOURCE_FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/master.cpp
-)
-add_executable(master 
-    ${SOURCE_FILES}
-)
-target_link_libraries(master PUBLIC
-    PkgConfig::lely-pkg
-)
-set_target_properties(master PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    RUNTIME_OUTPUT_DIRECTORY ""
-)
-target_compile_options(master PRIVATE 
-    -Wno-write-strings
-)
-target_compile_definitions(master PUBLIC 
-    LELY_NO_MALLOC=1
-)
+#set(SOURCE_FILES
+#    ${CMAKE_CURRENT_SOURCE_DIR}/master.cpp
+#)
+#add_executable(master 
+#    ${SOURCE_FILES}
+#)
+#target_link_libraries(master PUBLIC
+#    PkgConfig::lely-pkg
+#)
+#set_target_properties(master PROPERTIES
+#    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+#    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+#    RUNTIME_OUTPUT_DIRECTORY ""
+#)
+#target_compile_options(master PRIVATE 
+#    -Wno-write-strings
+#)
+#target_compile_definitions(master PUBLIC 
+#    LELY_NO_MALLOC=1
+#)
 
 
 #############################################################################
