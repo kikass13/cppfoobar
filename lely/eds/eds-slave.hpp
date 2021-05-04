@@ -7810,11 +7810,8 @@ MySlave1_init(void) {
 	static co_dev_t *dev = NULL;
 	if (!dev) {
 		dev = &MySlave1;
-		std::cout << "A\n";
 		co_dev_insert_obj(&MySlave1, &MySlave1_1000);
-		std::cout << "B\n";
 		co_obj_insert_sub(&MySlave1_1000, &MySlave1_1000sub0);
-		std::cout << "C\n";
 
 		co_dev_insert_obj(&MySlave1, &MySlave1_1001);
 		co_obj_insert_sub(&MySlave1_1001, &MySlave1_1001sub0);

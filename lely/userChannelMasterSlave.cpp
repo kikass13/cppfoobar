@@ -12,6 +12,14 @@
 
 #include <iostream>
 
+
+/// kikass13:
+/// eds configuration build definitions, that were also used when building lely-core
+/// these have to be injected there as well, or we will have problems regarding tree generation
+/// == copy paste from lely-core/config.h
+#define LELY_NO_CO_OBJ_NAME 1
+#define LELY_NO_CO_OBJ_LIMITS 1
+
 /// kikass13:
 /// include generated (convertEds2Hpp) slave definition
 /// instead of loading the .eds file dynamically at runtime
@@ -91,7 +99,7 @@ class MyDriver : public canopen::FiberDriver {
 void on_next(const timespec* tp, void* arg) {
   (void)tp;
   (void)arg;
-  std::cout << "onNext()\n";
+  // std::cout << "onNext()\n";
 }
 
 // This function is invoked by a user-defined CAN channel whenever a CAN frame

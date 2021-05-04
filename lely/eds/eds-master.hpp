@@ -6,6 +6,8 @@
 #include <lely/co/detail/obj.h>
 #include <lely/util/cmp.h>
 
+#include <iostream>
+
 #define CO_DEV_STRING(s) s
 
 static co_dev_t MyMaster = {
