@@ -144,7 +144,7 @@ int main() {
   // means every user-defined callback for a CANopen event will be posted as a
   // task on the event loop, instead of being invoked during the event
   // processing by the stack.
-  //canopen::AsyncMaster master(timer, chan, "eds/master.dcf", "", 1);
+  // canopen::AsyncMaster master(timer, chan, "eds/master.dcf", "", 1);
   /// kikass13:
   /// create Slave object using static generated eds device destription object 
   canopen::AsyncMaster master(timer, chan, &MyMaster, 1);
