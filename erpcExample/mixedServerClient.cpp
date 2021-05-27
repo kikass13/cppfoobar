@@ -108,7 +108,7 @@ int main()
         // erpc_transport_t s_transport = erpc_transport_tcp_init("127.0.0.1", 13378, true);
 
         /* MessageBufferFactory initialization */
-        erpc_mbf_t s_message_buffer_factory = erpc_mbf_dynamic_init();
+        erpc_mbf_t s_message_buffer_factory = erpc_mbf_static_init();
 
         std::cout << "[Server] Initializing server ..." << std::endl;
 
@@ -145,7 +145,7 @@ int main()
         // erpc_transport_t c_transport = erpc_transport_tcp_init("127.0.0.1", 13378, false);
 
         /* MessageBufferFactory initialization */
-        erpc_mbf_t c_message_buffer_factory = erpc_mbf_dynamic_init();
+        erpc_mbf_t c_message_buffer_factory = erpc_mbf_static_init();
 
         std::cout << "[Client] Initializing transport ..." << std::endl;
 
