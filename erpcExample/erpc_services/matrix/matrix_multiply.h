@@ -51,9 +51,9 @@ extern "C" {
 
 //! @name MatrixMultiplyService
 //@{
+void erpcMatrixMultiply_service(Matrix matrix1, Matrix matrix2, Matrix result_matrix);
 void erpcMatrixMultiply(Matrix matrix1, Matrix matrix2, Matrix result_matrix);
 //@}
-
 #if defined(__cplusplus)
 }
 #endif

@@ -31,7 +31,6 @@ extern ClientManager *g_client;
 #pragma weak matrix_size
 extern const int32_t matrix_size = 5;
 
-
 // MatrixMultiplyService interface erpcMatrixMultiply function client shim.
 void erpcMatrixMultiply(Matrix matrix1, Matrix matrix2, Matrix result_matrix)
 {

@@ -14,6 +14,7 @@
 #include "erpc_port.h"
 #include "erpc_manually_constructed.h"
 
+
 #if 10800 != ERPC_VERSION_NUMBER
 #error "The generated shim code version is different to the rest of eRPC code."
 #endif
@@ -90,7 +91,7 @@ erpc_status_t MatrixMultiplyService_service::erpcMatrixMultiply_shim(Codec * cod
 #if ERPC_NESTED_CALLS_DETECTION
         nestingDetection = true;
 #endif
-        erpcMatrixMultiply(matrix1, matrix2, result_matrix);
+        erpcMatrixMultiply_service(matrix1, matrix2, result_matrix);
 #if ERPC_NESTED_CALLS_DETECTION
         nestingDetection = false;
 #endif
@@ -106,7 +107,6 @@ erpc_status_t MatrixMultiplyService_service::erpcMatrixMultiply_shim(Codec * cod
 
         // Build response message.
         codec->startWriteMessage(kReplyMessage, kMatrixMultiplyService_service_id, kMatrixMultiplyService_erpcMatrixMultiply_id, sequence);
-
         for (uint32_t arrayCount0 = 0U; arrayCount0 < 5U; ++arrayCount0)
         {
             for (uint32_t arrayCount1 = 0U; arrayCount1 < 5U; ++arrayCount1)
