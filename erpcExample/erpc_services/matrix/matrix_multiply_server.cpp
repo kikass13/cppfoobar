@@ -91,7 +91,7 @@ erpc_status_t MatrixMultiplyService_service::erpcMatrixMultiply_shim(Codec * cod
 #if ERPC_NESTED_CALLS_DETECTION
         nestingDetection = true;
 #endif
-        erpcMatrixMultiply_service(matrix1, matrix2, result_matrix);
+        services::erpcMatrixMultiply(matrix1, matrix2, result_matrix);
 #if ERPC_NESTED_CALLS_DETECTION
         nestingDetection = false;
 #endif

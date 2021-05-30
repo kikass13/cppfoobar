@@ -45,14 +45,20 @@ enum _MatrixMultiplyService_ids
     kMatrixMultiplyService_erpcMatrixMultiply_id = 1,
 };
 
+namespace services{
+    extern void erpcMatrixMultiply(Matrix matrix1, Matrix matrix2, Matrix result_matrix);
+}
+namespace {
+    extern void erpcMatrixMultiply(Matrix matrix1, Matrix matrix2, Matrix result_matrix);
+}
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
 
 //! @name MatrixMultiplyService
 //@{
-void erpcMatrixMultiply_service(Matrix matrix1, Matrix matrix2, Matrix result_matrix);
-void erpcMatrixMultiply(Matrix matrix1, Matrix matrix2, Matrix result_matrix);
+
 //@}
 #if defined(__cplusplus)
 }

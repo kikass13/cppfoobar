@@ -33,7 +33,7 @@ void siginthandler(int param)
 #include "erpc_tcp_transport.h"
 
 /* implementation of function call */
-void erpcMatrixMultiply_service(Matrix matrix1, Matrix matrix2, Matrix result_matrix)
+void services::erpcMatrixMultiply(Matrix matrix1, Matrix matrix2, Matrix result_matrix)
 {
     /* code for multiplication of matrices */
     std::cout << "Service erpcMatrixMultiply() called!" << std::endl;
