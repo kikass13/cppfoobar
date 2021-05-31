@@ -32,7 +32,7 @@ extern ClientManager *g_client;
 extern const int32_t matrix_size = 5;
 
 // MatrixMultiplyService interface erpcMatrixMultiply function client shim.
-void erpcMatrixMultiply(Matrix matrix1, Matrix matrix2, Matrix result_matrix)
+void remote::erpcMatrixMultiplyX(Matrix matrix1, Matrix matrix2, Matrix result_matrix)
 {
     erpc_status_t err = kErpcStatus_Success;
 

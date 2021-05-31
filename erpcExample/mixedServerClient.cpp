@@ -165,7 +165,7 @@ int main()
         {
             // std::cout << "[Client] Calling service ..." << std::endl;
             /* call eRPC functions */
-            erpcMatrixMultiply(matrix1, matrix2, result);
+            remote::erpcMatrixMultiplyX(matrix1, matrix2, result);
             if(latestClientError == 0)
             {
                 std::cout << "\n   = \n\n";

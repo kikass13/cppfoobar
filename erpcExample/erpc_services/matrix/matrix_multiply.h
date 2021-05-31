@@ -48,8 +48,8 @@ enum _MatrixMultiplyService_ids
 namespace services{
     extern void erpcMatrixMultiply(Matrix matrix1, Matrix matrix2, Matrix result_matrix);
 }
-namespace {
-    extern void erpcMatrixMultiply(Matrix matrix1, Matrix matrix2, Matrix result_matrix);
+namespace remote{
+    extern void erpcMatrixMultiplyX(Matrix matrix1, Matrix matrix2, Matrix result_matrix);
 }
 
 #if defined(__cplusplus)
