@@ -81,20 +81,33 @@ void clientErrorCallback(erpc_status_t err, uint32_t functionID){
 }
 
 
-#define N 1000
+//using myContainer_t = std::queue<uint8_t>;
+using myContainer_t = erpc::RingBuffer<uint8_t, 512>;
+
+template<class T>
+class IOBufs{
+public:
+	IOBufs(T* in, T* out)
+	: receiveBuf_{in}, sendBuf_{out}{}
+public:
+	T* getReceiveBuffer() const {return receiveBuf_;}
+	T* getSendBuffer() const {return sendBuf_;}
+private:
+	T* receiveBuf_;
+	T* sendBuf_;
+};
+
 
 int main()
 {
     signal(SIGINT, siginthandler);
     signal(SIGTERM, siginthandler);
 
-    std::queue<uint8_t> buffer1;
-    std::queue<uint8_t> buffer2;
+    myContainer_t buffer1;
+    myContainer_t buffer2;
 
-    std::queue<uint8_t>* serverReceiveBuf = &buffer1;
-    std::queue<uint8_t>* serverSendBuf = &buffer2;
-    std::queue<uint8_t>* clientReceiveBuf = &buffer2;
-    std::queue<uint8_t>* clientSendBuf = &buffer1;
+    IOBufs<myContainer_t> serverBuffers(&buffer1, &buffer2);
+    IOBufs<myContainer_t> clientBuffers(&buffer2, &buffer1);
     /// ###############################################################
     /// Server
     /// ###############################################################
@@ -104,7 +117,7 @@ int main()
 
         /* Init eRPC server environment */
         /* tcp transport layer initialization */
-        erpc_transport_t s_transport = erpc_transport_fifo_init(serverReceiveBuf, serverSendBuf);
+        erpc_transport_t s_transport = erpc_transport_fifo_init(serverBuffers.getReceiveBuffer(), serverBuffers.getSendBuffer());
         // erpc_transport_t s_transport = erpc_transport_tcp_init("127.0.0.1", 13378, true);
 
         /* MessageBufferFactory initialization */
@@ -141,7 +154,7 @@ int main()
 
         /* Init eRPC client environment */
         /* tcp transport layer initialization */
-        erpc_transport_t c_transport = erpc_transport_fifo_init(clientReceiveBuf, clientSendBuf);
+        erpc_transport_t c_transport = erpc_transport_fifo_init(clientBuffers.getReceiveBuffer(), clientBuffers.getSendBuffer());
         // erpc_transport_t c_transport = erpc_transport_tcp_init("127.0.0.1", 13378, false);
 
         /* MessageBufferFactory initialization */
