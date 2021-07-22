@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+   <FileVersion major="1" minor="6" />
+   <Project>
+      <Option title="pythonFromCppRos" />
+      <Option makefile_is_custom="1" />
+      <Option compiler="gcc" />
+      <Option virtualFolders="CMake Files\;" />
+      <Build>
+      <Target title="all">
+         <Option working_dir="/home/fgn/cppfoobar/pythonFromCppRos" />
+         <Option type="4" />
+         <MakeCommands>
+            <Build command="/usr/bin/make -f &quot;/home/fgn/cppfoobar/pythonFromCppRos/Makefile&quot;  VERBOSE=1 all" />
+            <CompileFile command="/usr/bin/make -f &quot;/home/fgn/cppfoobar/pythonFromCppRos/Makefile&quot;  VERBOSE=1 &quot;$file&quot;" />
+            <Clean command="/usr/bin/make -f &quot;/home/fgn/cppfoobar/pythonFromCppRos/Makefile&quot;  VERBOSE=1 clean" />
+            <DistClean command="/usr/bin/make -f &quot;/home/fgn/cppfoobar/pythonFromCppRos/Makefile&quot;  VERBOSE=1 clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="edit_cache">
+         <Option working_dir="/home/fgn/cppfoobar/pythonFromCppRos" />
+         <Option type="4" />
+         <MakeCommands>
+            <Build command="/usr/bin/make -f &quot;/home/fgn/cppfoobar/pythonFromCppRos/Makefile&quot;  VERBOSE=1 edit_cache" />
+            <CompileFile command="/usr/bin/make -f &quot;/home/fgn/cppfoobar/pythonFromCppRos/Makefile&quot;  VERBOSE=1 &quot;$file&quot;" />
+            <Clean command="/usr/bin/make -f &quot;/home/fgn/cppfoobar/pythonFromCppRos/Makefile&quot;  VERBOSE=1 clean" />
+            <DistClean command="/usr/bin/make -f &quot;/home/fgn/cppfoobar/pythonFromCppRos/Makefile&quot;  VERBOSE=1 clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="rebuild_cache">
+         <Option working_dir="/home/fgn/cppfoobar/pythonFromCppRos" />
+         <Option type="4" />
+         <MakeCommands>
+            <Build command="/usr/bin/make -f &quot;/home/fgn/cppfoobar/pythonFromCppRos/Makefile&quot;  VERBOSE=1 rebuild_cache" />
+            <CompileFile command="/usr/bin/make -f &quot;/home/fgn/cppfoobar/pythonFromCppRos/Makefile&quot;  VERBOSE=1 &quot;$file&quot;" />
+            <Clean command="/usr/bin/make -f &quot;/home/fgn/cppfoobar/pythonFromCppRos/Makefile&quot;  VERBOSE=1 clean" />
+            <DistClean command="/usr/bin/make -f &quot;/home/fgn/cppfoobar/pythonFromCppRos/Makefile&quot;  VERBOSE=1 clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="pythonFromCppRos">
+         <Option output="/home/fgn/cppfoobar/pythonFromCppRos/pythonFromCppRos" prefix_auto="0" extension_auto="0" />
+         <Option working_dir="/home/fgn/cppfoobar/pythonFromCppRos" />
+         <Option object_output="./" />
+         <Option type="1" />
+         <Option compiler="gcc" />
+         <Compiler>
+            <Add directory="/usr/include" />
+            <Add directory="/usr/include/c++/5" />
+            <Add directory="/usr/include/c++/5/backward" />
+            <Add directory="/usr/include/python2.7" />
+            <Add directory="/usr/include/x86_64-linux-gnu" />
+            <Add directory="/usr/include/x86_64-linux-gnu/c++/5" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed" />
+            <Add directory="/usr/local/include" />
+         </Compiler>
+         <MakeCommands>
+            <Build command="/usr/bin/make -f &quot;/home/fgn/cppfoobar/pythonFromCppRos/Makefile&quot;  VERBOSE=1 pythonFromCppRos" />
+            <CompileFile command="/usr/bin/make -f &quot;/home/fgn/cppfoobar/pythonFromCppRos/Makefile&quot;  VERBOSE=1 &quot;$file&quot;" />
+            <Clean command="/usr/bin/make -f &quot;/home/fgn/cppfoobar/pythonFromCppRos/Makefile&quot;  VERBOSE=1 clean" />
+            <DistClean command="/usr/bin/make -f &quot;/home/fgn/cppfoobar/pythonFromCppRos/Makefile&quot;  VERBOSE=1 clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="pythonFromCppRos/fast">
+         <Option output="/home/fgn/cppfoobar/pythonFromCppRos/pythonFromCppRos" prefix_auto="0" extension_auto="0" />
+         <Option working_dir="/home/fgn/cppfoobar/pythonFromCppRos" />
+         <Option object_output="./" />
+         <Option type="1" />
+         <Option compiler="gcc" />
+         <Compiler>
+            <Add directory="/usr/include" />
+            <Add directory="/usr/include/c++/5" />
+            <Add directory="/usr/include/c++/5/backward" />
+            <Add directory="/usr/include/python2.7" />
+            <Add directory="/usr/include/x86_64-linux-gnu" />
+            <Add directory="/usr/include/x86_64-linux-gnu/c++/5" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed" />
+            <Add directory="/usr/local/include" />
+         </Compiler>
+         <MakeCommands>
+            <Build command="/usr/bin/make -f &quot;/home/fgn/cppfoobar/pythonFromCppRos/Makefile&quot;  VERBOSE=1 pythonFromCppRos/fast" />
+            <CompileFile command="/usr/bin/make -f &quot;/home/fgn/cppfoobar/pythonFromCppRos/Makefile&quot;  VERBOSE=1 &quot;$file&quot;" />
+            <Clean command="/usr/bin/make -f &quot;/home/fgn/cppfoobar/pythonFromCppRos/Makefile&quot;  VERBOSE=1 clean" />
+            <DistClean command="/usr/bin/make -f &quot;/home/fgn/cppfoobar/pythonFromCppRos/Makefile&quot;  VERBOSE=1 clean" />
+         </MakeCommands>
+      </Target>
+      </Build>
+      <Unit filename="/home/fgn/cppfoobar/pythonFromCppRos/main.cpp">
+         <Option target="pythonFromCppRos"/>
+      </Unit>
+      <Unit filename="/home/fgn/cppfoobar/pythonFromCppRos/main.h">
+         <Option target="pythonFromCppRos"/>
+      </Unit>
+      <Unit filename="/home/fgn/cppfoobar/pythonFromCppRos/CMakeLists.txt">
+          <Option virtualFolder="CMake Files\" />
+      </Unit>
+   </Project>
+</CodeBlocks_project_file>

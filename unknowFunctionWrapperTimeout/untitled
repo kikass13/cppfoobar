@@ -1,0 +1,25 @@
+
+
+
+
+Threshold = 3s
+
+enabled:
+
+ResetTime = 10
+
+		Now?			
+		10			11			12		13
+
+
+Diff	 0			1			2		3 	TIMEOUT	
+
+
+disabled:
+ResetTime = 10
+
+		Now?			
+		10			11			12		13
+
+
+Diff	 0			1			2		3 	TIMEOUT
