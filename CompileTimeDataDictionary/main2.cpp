@@ -14,7 +14,8 @@
 template <size_t N> struct StringLiteral {
   constexpr StringLiteral(const char (&str)[N]) { std::copy_n(str, N, value); }
 
-  constexpr bool operator==(const StringLiteral &rhs) const {
+  template<typename OtherStringLiteral>
+  constexpr bool operator==(const OtherStringLiteral &rhs) const {
     return std::strcmp(rhs.value, value) == 0;
   }
 
@@ -104,9 +105,13 @@ private:
 
 typedef IOList<> NoIOs;
 
+struct ComplexData{
+  int a = -1;
+};
+
 int main() {
   using MyNodeIoMessagingDict =
-      IOList<IO<uint32_t, "var1">, IO<uint32_t, "var2">>;
+      IOList<IO<uint32_t, "var1">, IO<uint32_t, "var2">, IO<ComplexData, "complex">>;
 
   MyNodeIoMessagingDict ios;
 
@@ -122,6 +127,9 @@ int main() {
   ios.set<"var2">(1337);
   std::cout << ios.get<"var1">() << std::endl;
   std::cout << ios.get<"var2">() << std::endl;
+
+  ios.set<"complex">(ComplexData{1338});
+  std::cout << ios.get<"complex">().a << std::endl;
 
   return 0;
 }
