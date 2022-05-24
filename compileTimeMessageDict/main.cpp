@@ -159,12 +159,84 @@ private:
 
 int main() {
 
-  IOList<IO<int, "var1">, IO<int, "var2">, IO<bool, "var3">> ios;
+  IOList<
+    IO<int, "var1">, 
+    IO<int, "var2">, 
+    IO<int, "var3">, 
+    IO<int, "var4">, 
+    IO<int, "var5">, 
+    IO<int, "var6">, 
+    IO<int, "var7">, 
+    IO<int, "var8">, 
+    IO<int, "var9">, 
+    IO<int, "var10">, 
+    IO<int, "var11">, 
+    IO<int, "var12">, 
+    IO<int, "var13">, 
+    IO<int, "var14">, 
+    IO<int, "var15">, 
+    IO<int, "var16">, 
+    IO<int, "var17">, 
+    IO<int, "var18">, 
+    IO<int, "var19">, 
+    IO<int, "var20">, 
+    IO<int, "var21">, 
+    IO<int, "var22">, 
+    IO<int, "var23">, 
+    IO<int, "var24">, 
+    IO<int, "var25">, 
+    IO<int, "var26">, 
+    IO<int, "var27">, 
+    IO<int, "var28">, 
+    IO<int, "var29">, 
+    IO<int, "var30">, 
+    IO<int, "var31">, 
+    IO<int, "var32">, 
+    IO<int, "var33">, 
+    IO<int, "var34">, 
+    IO<int, "var35">, 
+    IO<int, "var36">, 
+    IO<int, "var37">
+  > ios;
 
   ios.set<"var1">(12);
   ios.set<"var2">(1337);
-  ios.set<"var3">(true);
-
+  ios.set<"var3">(20000);
+  ios.set<"var4">(20000);
+  ios.set<"var5">(20000);
+  ios.set<"var6">(20000);
+  ios.set<"var7">(20000);
+  ios.set<"var8">(20000);
+  ios.set<"var9">(20000);
+  ios.set<"var10">(20000);
+  ios.set<"var11">(20000);
+  ios.set<"var12">(20000);
+  ios.set<"var13">(20000);
+  ios.set<"var14">(20000);
+  ios.set<"var15">(20000);
+  ios.set<"var16">(20000);
+  ios.set<"var17">(20000);
+  ios.set<"var18">(20000);
+  ios.set<"var19">(20000);
+  ios.set<"var20">(20000);
+  ios.set<"var21">(20000);
+  ios.set<"var22">(20000);
+  ios.set<"var23">(20000);
+  ios.set<"var24">(20000);
+  ios.set<"var25">(20000);
+  ios.set<"var26">(20000);
+  ios.set<"var27">(20000);
+  ios.set<"var28">(20000);
+  ios.set<"var29">(20000);
+  ios.set<"var30">(20000);
+  ios.set<"var31">(20000);
+  ios.set<"var32">(20000);
+  ios.set<"var33">(20000);
+  ios.set<"var34">(20000);
+  ios.set<"var35">(20000);
+  ios.set<"var36">(20000);
+  ios.set<"var37">(20000);
+  
   std::cout << ios.get<"var3">() << std::endl;
   std::cout << ios.get<"var1">() << std::endl;
   std::cout << ios.get<"var2">() << std::endl;
