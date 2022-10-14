@@ -71,7 +71,7 @@ public:
 private:
   volatile Index head;
   volatile Index tail;
-
+  size_t size = 0;
   T buffer[N + 1];
 };
 

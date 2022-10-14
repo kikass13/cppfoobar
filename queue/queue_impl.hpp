@@ -53,18 +53,7 @@ template<typename T, std::size_t N>
 typename Queue<T, N>::Size
 Queue<T, N>::getSize() const
 {
-	Index tmphead = this->head;
-	Index tmptail = this->tail;
-
-	Index stored;
-	if (tmphead >= tmptail) {
-		stored = tmphead - tmptail;
-	}
-	else {
-		stored = (N + 1) - tmptail + tmphead;
-	}
-
-	return stored;
+	return size;
 }
 
 template<typename T, std::size_t N>
@@ -88,6 +77,7 @@ Queue<T, N>::push(const T& value)
 	else {
 		this->buffer[this->head] = value;
 		this->head = tmphead;
+		size++;
 		return true;
 	}
 }
@@ -101,6 +91,7 @@ Queue<T, N>::pop()
 		tmptail = 0;
 	}
 	this->tail = tmptail;
+	size--;
 }
 
 template<typename T, std::size_t N>
@@ -112,13 +103,12 @@ Queue<T, N>::copy(const T* src, size_t length){
 	if(length > N - getSize()){
 		return false;
 	}
-	Index tmphead = this->head;
-	T* ptr = &this->buffer[tmphead];
-	std::memcpy(ptr, src, length);
-	tmphead += length;
+	std::memcpy(&this->buffer[this->head], src, length);
+	Index tmphead = this->head + length;
 	if (tmphead >= (N+1)) {
 		tmphead = 0;
 	}
 	this->head = tmphead;
+	size += length;
 	return true;
 }

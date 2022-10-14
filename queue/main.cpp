@@ -32,4 +32,23 @@ int main() {
   }
   std::cout << std::endl;
   std::cout << "_____________________________________" << std::endl;
+
+  Queue<uint8_t, 256> q3;
+  uint8_t d[2] = {255, 0};
+  for (unsigned int n = 0; n < 3; n++) {
+    for (unsigned int i = 0; i < 129; i++) {
+      bool s = q3.copy(d, 2);
+      if (!s) {
+        std::cout << "failed at: " << i << std::endl;
+      }
+    }
+
+    for (unsigned int i = 0; i < 256; i++) {
+      std::cout << (int)q3.get() << " ";
+      q3.pop();
+    }
+    std::cout << std::endl;
+    std::cout << "S: " << (int) q3.getSize() << std::endl;
+  }
+  std::cout << "_____________________________________" << std::endl;
 }
