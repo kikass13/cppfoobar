@@ -77,7 +77,7 @@ public:
   void reset() {
     m_size = 0;
     m_first = m_buff;
-    m_last == m_end;
+    m_last = m_end;
   }
 
   bool isEmpty() const { return size() == 0; }
@@ -144,7 +144,7 @@ private:
       p = m_end;
     --p;
   }
-  auto add(auto p, auto n) const {
+  auto add(auto p, int n) const {
     return p + (n < (m_end - p) ? n : n - (m_end - m_buff));
   }
   void construct(auto p, T val) { *p = T{val}; }
