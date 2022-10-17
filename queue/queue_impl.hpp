@@ -77,7 +77,7 @@ Queue<T, N>::push(const T& value)
 	else {
 		this->buffer[this->head] = value;
 		this->head = tmphead;
-		size++;
+		size = size + 1;
 		return true;
 	}
 }
@@ -91,7 +91,7 @@ Queue<T, N>::pop()
 		tmptail = 0;
 	}
 	this->tail = tmptail;
-	size--;
+	size = size - 1;
 }
 
 template<typename T, std::size_t N>
@@ -109,6 +109,6 @@ Queue<T, N>::copy(const T* src, size_t length){
 		tmphead = 0;
 	}
 	this->head = tmphead;
-	size += length;
+	size = size + length;
 	return true;
 }
