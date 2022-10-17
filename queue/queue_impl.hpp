@@ -1,18 +1,16 @@
 #pragma once
 
-template <typename T, std::size_t N> Queue<T, N>::Queue() : head(0), tail(0), buffer{0} {}
+#include <iostream>
+
+template <typename T, std::size_t N>
+Queue<T, N>::Queue() : head(0), tail(0), buffer{0} {}
 
 template <typename T, std::size_t N> bool Queue<T, N>::isFull() const {
-  Index tmphead = this->head + 1;
-  if (tmphead >= (N + 1)) {
-    tmphead = 0;
-  }
-
-  return (tmphead == this->tail);
+  return size == N;
 }
 
-template <typename T, std::size_t N> const T& Queue<T, N>::at(auto i) const {
-	return this->buffer[i];
+template <typename T, std::size_t N> const T &Queue<T, N>::at(auto i) const {
+  return this->buffer[i];
 }
 
 template <typename T, std::size_t N> bool Queue<T, N>::isNearlyFull() const {
@@ -22,7 +20,7 @@ template <typename T, std::size_t N> bool Queue<T, N>::isNearlyFull() const {
 }
 
 template <typename T, std::size_t N> bool Queue<T, N>::isEmpty() const {
-  return (this->head == this->tail);
+  return size == 0;
 }
 
 template <typename T, std::size_t N> bool Queue<T, N>::isNearlyEmpty() const {
@@ -66,6 +64,7 @@ template <typename T, std::size_t N> void Queue<T, N>::pop() {
   if (tmptail >= (N + 1)) {
     tmptail = 0;
   }
+  this->buffer[tail] = 0;
   this->tail = tmptail;
   size = size - 1;
 }
@@ -78,19 +77,18 @@ bool Queue<T, N>::copy(const T *src, size_t length) {
   if (length > N - getSize()) {
     return false;
   }
-  if((this->head + length) > N){
-	size_t s1 = N - this->head;
-	size_t s2 = length - s1;
-	const T* src_mid = src + s1; 
-	std::memcpy(&this->buffer[this->head], src, s1);
-	std::memcpy(&this->buffer[0], src_mid, s2);
-  }
-  else{
-	  std::memcpy(&this->buffer[this->head], src, length);
+  if ((this->head + length) > N) {
+    size_t s1 = N - this->head;
+    size_t s2 = length - s1;
+    const T *src_mid = src + s1;
+    std::memcpy(&this->buffer[this->head], src, s1);
+    std::memcpy(&this->buffer[0], src_mid, s2);
+  } else {
+    std::memcpy(&this->buffer[this->head], src, length);
   }
   Index tmphead = this->head + length;
   if (tmphead >= (N + 1)) {
-    tmphead = 0;
+    tmphead = tmphead - N;
   }
   this->head = tmphead;
   size = size + length;

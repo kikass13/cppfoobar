@@ -74,4 +74,28 @@ int main() {
   std::cout << std::endl;
   std::cout << "S: " << (int)q3.getSize() << std::endl;
   std::cout << "_____________________________________" << std::endl;
+  q4.pop();
+  q4.pop();
+  q4.pop();
+  q4.pop();
+  q4.pop();
+  s = q4.copy(dd, 5);
+  for (unsigned int i = 0; i < 8; i++) {
+    std::cout << (int)q4.at(i) << " ";
+  }
+  std::cout << std::endl;
+  std::cout << "S: " << (int)q3.getSize() << std::endl;
+  q4.pop();
+  q4.pop();
+  q4.pop();
+  q4.pop();
+  q4.pop();
+  q4.push(127);
+  q4.pop();
+  s = q4.copy(dd, 5);
+  for (unsigned int i = 0; i < 8; i++) {
+    std::cout << (int)q4.at(i) << " ";
+  }
+  std::cout << std::endl;
+  std::cout << "S: " << (int)q3.getSize() << std::endl;
 }
