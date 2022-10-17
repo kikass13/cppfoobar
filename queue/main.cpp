@@ -48,7 +48,30 @@ int main() {
       q3.pop();
     }
     std::cout << std::endl;
-    std::cout << "S: " << (int) q3.getSize() << std::endl;
+    std::cout << "S: " << (int)q3.getSize() << std::endl;
   }
+  std::cout << "_____________________________________" << std::endl;
+
+  Queue<uint8_t, 8> q4;
+  uint8_t dd[5] = {255, 244, 233, 222, 211};
+  q4.push(1);
+  q4.push(2);
+  q4.push(3);
+  q4.pop();
+  q4.push(4);
+  // q4.push(5);
+  // q4.pop();
+  // q4.pop();
+  bool s = q4.copy(dd, 5);
+  if (!s) {
+    std::cout << "failed at X" << std::endl;
+  }
+
+  size_t size = q4.getSize();
+  for (unsigned int i = 0; i < size; i++) {
+    std::cout << (int)q4.at(i) << " ";
+  }
+  std::cout << std::endl;
+  std::cout << "S: " << (int)q3.getSize() << std::endl;
   std::cout << "_____________________________________" << std::endl;
 }

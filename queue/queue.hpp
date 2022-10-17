@@ -16,8 +16,8 @@
 #pragma once
 #include <cstddef>
 #include <cstdint>
-#include <type_traits>
 #include <cstring>
+#include <type_traits>
 
 template <typename T, std::size_t N> class Queue {
 public:
@@ -28,6 +28,8 @@ public:
 
 public:
   Queue();
+
+  const T &at(auto i) const;
 
   bool isFull() const;
 
@@ -66,7 +68,7 @@ public:
 
   void pop();
 
-  bool copy(const T* src, size_t length);
+  bool copy(const T *src, size_t length);
 
 private:
   volatile Index head;
