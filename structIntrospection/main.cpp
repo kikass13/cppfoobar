@@ -18,7 +18,7 @@ auto out = []<typename... Args>(Args... args) {
       std::tie(args...));
 };
 
-auto AllAttributes = std::make_tuple(Human{}, Developer{});
+auto AllAttributes = std::make_tuple(Human{}, Developer{}, Xaxa{});
 
 int main() {
   Human h;
