@@ -20,23 +20,25 @@ template <size_t N> struct StringLiteral {
   char value[N];
 };
 
-// template <typename F, template <StringLiteral K, typename T> typename Attr,
-//           StringLiteral K, typename T>
-// static constexpr void attributeDescription(F f, Attr<K, T> &attr) {
-// //    if constexpr (std::is_floating_point<
-// //                         typename Attr<K, T>::internalType>::value) {
-// //         t = 'f';
-// //       } else if constexpr (std::is_integral<
-// //                                typename Attr<K, T>::internalType>::value) {
-// //         t = 'i';
-// //       } else if constexpr (std::is_array<
-// //                                typename Attr<K, T>::internalType>::value) {
-// //         t = 'a';
-// //       }   
-//     attr.attributes(f);
-// }
-
 /// ##################################################
+
+template <typename T> static constexpr void typeChar(char *t, size_t d) {
+  t[d] = '0';
+  if constexpr (std::is_floating_point<T>::value) {
+    t[d] = 'f';
+  } else if constexpr (std::is_integral<T>::value) {
+    t[d] = 'i';
+  } else if constexpr (std::is_array<T>::value) {
+    T arr{};
+    using arrElemType = std::remove_reference<decltype(*arr)>::type;
+    t[d] = 'a';
+    typeChar<arrElemType>(t, d + 1);
+    t[d + 2] = '\0';
+  }
+  else{
+    t[d] = '?';
+  }
+}
 
 template <StringLiteral K, typename T> struct Attribute {
   using internalType = T;
@@ -48,21 +50,17 @@ template <StringLiteral K, typename T> struct Attribute {
       auto size = getSize();
       char s[5];
       sprintf(s, "%ld", size);
-      char t = 'u';
-      if constexpr (std::is_floating_point<internalType>::value) {
-        t = 'f';
-      } else if constexpr (std::is_integral<internalType>::value) {
-        t = 'i';
-      } else if constexpr (std::is_array<internalType>::value) {
-        t = 'a';
-      }
+      s[sizeof(s) - 1] = '\0';
+      char t[10];
+      std::memset(t, '\0', sizeof(t));
+      typeChar<internalType>(t, 0);
+      t[sizeof(t) - 1] = '\0';
       f("(", key(), ":", s, ":", t, ")");
       return;
-    }
-    else{
-        /// complex type
-        T complex;
-        complex.attributes(f);
+    } else {
+      /// complex type
+      T complex;
+      complex.attributes(f);
     }
   }
 };
@@ -105,6 +103,9 @@ struct Sub : Object<"Sub", Attribute<"a", int>, Attribute<"b", int>> {
   int a = 0;
   int b = 0;
 };
-struct Xaxa : Object<"Xaxa", Attribute<"sub", Sub>> {
+
+using Arr = std::array<std::array<uint8_t, 5>, 10>;
+struct Xaxa : Object<"Xaxa", Attribute<"sub", Sub>, Attribute<"arrarr", Arr>> {
   Sub s;
+  Arr arr;
 };
