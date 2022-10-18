@@ -11,6 +11,13 @@
 
 using size_t = std::size_t;
 
+template <typename E> constexpr auto to_underlying(E e) noexcept {
+  return static_cast<std::underlying_type_t<E>>(e);
+}
+template <typename T>
+using element_type_t =
+    std::remove_reference_t<decltype(*std::begin(std::declval<T &>()))>;
+
 template <size_t N> struct StringLiteral {
   constexpr StringLiteral(const char (&str)[N]) { std::copy_n(str, N, value); }
   template <typename OtherStringLiteral>
@@ -20,7 +27,75 @@ template <size_t N> struct StringLiteral {
   char value[N];
 };
 
+template <size_t N> class Buf {
+public:
+  constexpr void copy(const char *src) {
+    auto size = strlen(src);
+    sprintf(&buf[j], "%s", src);
+    j += size;
+    buf[j] = '\0';
+  }
+  constexpr void push(auto c) { buf[j++] = c; }
+  constexpr char *get() { return buf; }
+  constexpr char *data() { return buf; }
+  constexpr char *consume() {
+    clear();
+    return buf;
+  }
+  constexpr size_t size() { return j; }
+  constexpr void clear() { j = 0; }
+
+private:
+  char buf[N];
+  size_t j = 0;
+};
+
+template <typename TypeTuple, size_t N> static constexpr auto createTypeString() {
+  Buf<N> buf;
+  // std::copy(buf.data(), buf.data()+N, out.begin());
+  //   buf.push('a');
+  //   buf.push('b');
+  //   buf.push('c');
+  //   buf.push('d');
+  //   buf.push('\0');
+
+  auto out = [&buf]<typename... Args>(Args... args) {
+    std::apply(
+        [&buf](auto &&...xs) {
+          // ((std::cout << std::forward<decltype(xs)>(xs)), ...);
+          // ((buf[j++] = xs[0]), ...);
+          // ((copyBuf(xs)), ...);
+          ((buf.copy(xs)), ...);
+        },
+        std::tie(args...));
+  };
+  TypeTuple t{};
+  std::apply([&](auto &&...o) { (o.attributes(out), ...); }, t);
+
+  return buf;
+}
+
 /// ##################################################
+/// ##################################################
+/// ##################################################
+/// ##################################################
+/// ##################################################
+/// ##################################################
+
+/// from:
+/// https://stackoverflow.com/questions/40924276/why-does-stdis-array-return-false-for-stdarray
+namespace notstd {
+template <class T> struct is_array : std::is_array<T> {};
+template <class T, std::size_t N>
+struct is_array<std::array<T, N>> : std::true_type {};
+// optional:
+  template<class T>
+  struct is_array<T const>:is_array<T>{};
+  template<class T>
+  struct is_array<T volatile>:is_array<T>{};
+  template<class T>
+  struct is_array<T volatile const>:is_array<T>{};
+} // namespace notstd
 
 template <typename T> static constexpr void typeChar(char *t, size_t d) {
   t[d] = '0';
@@ -28,23 +103,33 @@ template <typename T> static constexpr void typeChar(char *t, size_t d) {
     t[d] = 'f';
   } else if constexpr (std::is_integral<T>::value) {
     t[d] = 'i';
+  } else if constexpr (std::is_enum<T>::value) {
+    using TT = decltype(to_underlying(T{}));
+    t[d] = 'e';
+    typeChar<TT>(t, d + 1);
+    t[d + 2] = '\0';
+    //   } else if constexpr (std::is_array<T>::value) {
   } else if constexpr (std::is_array<T>::value) {
     T arr{};
     using arrElemType = std::remove_reference<decltype(*arr)>::type;
     t[d] = 'a';
     typeChar<arrElemType>(t, d + 1);
     t[d + 2] = '\0';
-  }
-  else{
+  } else if constexpr (notstd::is_array<T>::value) {
+    using arrElemType = element_type_t<T>;
+    t[d] = 'a';
+    t[d + 2] = '\0';
+    typeChar<arrElemType>(t, d + 1);
+  } else {
     t[d] = '?';
   }
 }
 
 template <StringLiteral K, typename T> struct Attribute {
   using internalType = T;
-  static constexpr size_t getSize() { return sizeof(T); }
-  const char *key() const { return K.value; }
-  const void attributes(auto &&f) {
+  size_t getSize() { return sizeof(T); }
+  const char *key() { return K.value; }
+  void attributes(auto &&f) {
     if constexpr (std::is_standard_layout<T>::value) {
       /// simple type
       auto size = getSize();
@@ -67,7 +152,7 @@ template <StringLiteral K, typename T> struct Attribute {
 
 template <StringLiteral K, typename... Attributes> class Object {
 public:
-  const void attributes(auto &&f) {
+  void attributes(auto &&f) {
     f("{", K.value, ":");
     using Ft = std::remove_reference<decltype(f)>::type;
     std::apply(
@@ -84,6 +169,12 @@ private:
       std::apply([](auto &&...args) { return std::make_tuple(args...); },
                  std::tuple<Attributes...>{});
 };
+
+/// ##################################################
+/// ##################################################
+/// ##################################################
+/// ##################################################
+/// ##################################################
 
 enum class R : uint8_t { NONE, KAUKASIAN, ASIAN, AFRICAN };
 struct Human : Object<"Human", Attribute<"age", int>,
@@ -103,9 +194,12 @@ struct Sub : Object<"Sub", Attribute<"a", int>, Attribute<"b", int>> {
   int a = 0;
   int b = 0;
 };
-
+struct Sub2 : Object<"Sub2", Attribute<"arr", int>> {
+  std::array<int,8> arr;
+};
 using Arr = std::array<std::array<uint8_t, 5>, 10>;
-struct Xaxa : Object<"Xaxa", Attribute<"sub", Sub>, Attribute<"arrarr", Arr>> {
+struct Xaxa : Object<"Xaxa", Attribute<"sub", Sub>, Attribute<"arrarr", Arr>, Attribute<"sub2", Sub2>> {
   Sub s;
   Arr arr;
+  Sub2 sub2;
 };
