@@ -27,6 +27,33 @@ template <size_t N> struct StringLiteral {
   char value[N];
 };
 
+template <typename T> constexpr auto sizeof_array(const T &iarray) {
+  return (sizeof(iarray) / sizeof(iarray[0]));
+}
+
+/// from:
+/// https://stackoverflow.com/questions/40924276/why-does-stdis-array-return-false-for-stdarray
+namespace notstd {
+template <class T> struct is_array : std::is_array<T> {};
+template <class T, std::size_t N>
+struct is_array<std::array<T, N>> : std::true_type {};
+// optional:
+template <class T> struct is_array<T const> : is_array<T> {};
+template <class T> struct is_array<T volatile> : is_array<T> {};
+template <class T> struct is_array<T volatile const> : is_array<T> {};
+} // namespace notstd
+
+template <typename T>
+using is_complex_datatype =
+    std::integral_constant<bool, std::is_class<T>::value &&
+                                     !notstd::is_array<T>::value>;
+/// ##################################################
+/// ##################################################
+/// ##################################################
+/// ##################################################
+/// ##################################################
+/// ##################################################
+
 template <size_t N> class Buf {
 public:
   constexpr void copy(const char *src) {
@@ -50,7 +77,8 @@ private:
   size_t j = 0;
 };
 
-template <typename TypeTuple, size_t N> static constexpr auto createTypeString() {
+template <typename TypeTuple, size_t N>
+static constexpr auto createTypeString() {
   Buf<N> buf;
   // std::copy(buf.data(), buf.data()+N, out.begin());
   //   buf.push('a');
@@ -75,68 +103,60 @@ template <typename TypeTuple, size_t N> static constexpr auto createTypeString()
   return buf;
 }
 
-/// ##################################################
-/// ##################################################
-/// ##################################################
-/// ##################################################
-/// ##################################################
-/// ##################################################
-
-/// from:
-/// https://stackoverflow.com/questions/40924276/why-does-stdis-array-return-false-for-stdarray
-namespace notstd {
-template <class T> struct is_array : std::is_array<T> {};
-template <class T, std::size_t N>
-struct is_array<std::array<T, N>> : std::true_type {};
-// optional:
-  template<class T>
-  struct is_array<T const>:is_array<T>{};
-  template<class T>
-  struct is_array<T volatile>:is_array<T>{};
-  template<class T>
-  struct is_array<T volatile const>:is_array<T>{};
-} // namespace notstd
-
 template <typename T> static constexpr void typeChar(char *t, size_t d) {
   t[d] = '0';
+  int end = d+1;
+  int sslen = 0;
   if constexpr (std::is_floating_point<T>::value) {
     t[d] = 'f';
   } else if constexpr (std::is_integral<T>::value) {
     t[d] = 'i';
   } else if constexpr (std::is_enum<T>::value) {
     using TT = decltype(to_underlying(T{}));
-    t[d] = 'e';
-    typeChar<TT>(t, d + 1);
-    t[d + 2] = '\0';
-    //   } else if constexpr (std::is_array<T>::value) {
+    /// we dont need to know that this is an enum
+    // t[d] = 'e';
+    typeChar<TT>(t, d);
+    end = strlen(t);
   } else if constexpr (std::is_array<T>::value) {
+    t[d] = 'a';
     T arr{};
     using arrElemType = std::remove_reference<decltype(*arr)>::type;
-    t[d] = 'a';
     typeChar<arrElemType>(t, d + 1);
-    t[d + 2] = '\0';
+    auto size = sizeof_array<T>(arr);
+    end = strlen(t);
+    char ss[5];
+    sprintf(ss, "/%ld", size);
+    sslen = strlen(ss);
+    strcpy(&t[end], ss);
   } else if constexpr (notstd::is_array<T>::value) {
     using arrElemType = element_type_t<T>;
     t[d] = 'a';
-    t[d + 2] = '\0';
     typeChar<arrElemType>(t, d + 1);
+    auto size = std::tuple_size_v<T>;
+    end = strlen(t);
+    char ss[5];
+    sprintf(ss, "/%ld", size);
+    sslen = strlen(ss);
+    strcpy(&t[end], ss);
   } else {
     t[d] = '?';
   }
+  // end string depending on added length
+    t[d + end + sslen] = '\0';
 }
 
 template <StringLiteral K, typename T> struct Attribute {
   using internalType = T;
-  size_t getSize() { return sizeof(T); }
-  const char *key() { return K.value; }
-  void attributes(auto &&f) {
-    if constexpr (std::is_standard_layout<T>::value) {
+  static constexpr size_t getSize() { return sizeof(T); }
+  static constexpr const char *key() { return K.value; }
+  static constexpr void attributes(auto &&f) {
+    if constexpr (!is_complex_datatype<T>::value) {
       /// simple type
       auto size = getSize();
       char s[5];
       sprintf(s, "%ld", size);
       s[sizeof(s) - 1] = '\0';
-      char t[10];
+      char t[30];
       std::memset(t, '\0', sizeof(t));
       typeChar<internalType>(t, 0);
       t[sizeof(t) - 1] = '\0';
@@ -152,9 +172,9 @@ template <StringLiteral K, typename T> struct Attribute {
 
 template <StringLiteral K, typename... Attributes> class Object {
 public:
-  void attributes(auto &&f) {
+  static constexpr void attributes(auto &&f) {
     f("{", K.value, ":");
-    using Ft = std::remove_reference<decltype(f)>::type;
+    std::tuple<Attributes...> attrs;
     std::apply(
         [f](auto &&...a) {
           // using At = typename std::remove_reference<decltype(a)>::value;
@@ -163,11 +183,6 @@ public:
         attrs);
     f("}");
   }
-
-private:
-  std::tuple<Attributes...> attrs =
-      std::apply([](auto &&...args) { return std::make_tuple(args...); },
-                 std::tuple<Attributes...>{});
 };
 
 /// ##################################################
@@ -195,11 +210,17 @@ struct Sub : Object<"Sub", Attribute<"a", int>, Attribute<"b", int>> {
   int b = 0;
 };
 struct Sub2 : Object<"Sub2", Attribute<"arr", int>> {
-  std::array<int,8> arr;
+  std::array<int, 8> arr;
 };
-using Arr = std::array<std::array<uint8_t, 5>, 10>;
-struct Xaxa : Object<"Xaxa", Attribute<"sub", Sub>, Attribute<"arrarr", Arr>, Attribute<"sub2", Sub2>> {
+
+using Arr = std::array<std::array<uint16_t, 8>, 10>;
+using ArrArrArr = std::array<std::array<std::array<uint8_t, 5>, 2>, 10>;
+struct Xaxa : Object<"Xaxa", Attribute<"sub", Sub>, Attribute<"some", int[5]>,
+                     Attribute<"arrarr", Arr>, Attribute<"sub2", Sub2>,
+                     Attribute<"arararar", ArrArrArr>> {
   Sub s;
+  int some[5];
   Arr arr;
   Sub2 sub2;
+  ArrArrArr arararar;
 };
