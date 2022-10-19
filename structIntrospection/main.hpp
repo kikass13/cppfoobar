@@ -80,13 +80,7 @@ private:
 template <typename TypeTuple, size_t N>
 static constexpr auto createTypeString() {
   Buf<N> buf;
-  // std::copy(buf.data(), buf.data()+N, out.begin());
-  //   buf.push('a');
-  //   buf.push('b');
-  //   buf.push('c');
-  //   buf.push('d');
-  //   buf.push('\0');
-
+  buf.push('{');
   auto out = [&buf]<typename... Args>(Args... args) {
     std::apply(
         [&buf](auto &&...xs) {
@@ -99,7 +93,7 @@ static constexpr auto createTypeString() {
   };
   TypeTuple t{};
   std::apply([&](auto &&...o) { (o.attributes(out), ...); }, t);
-
+  buf.push('}');
   return buf;
 }
 
@@ -160,7 +154,7 @@ template <StringLiteral K, typename T> struct Attribute {
       std::memset(t, '\0', sizeof(t));
       typeChar<internalType>(t, 0);
       t[sizeof(t) - 1] = '\0';
-      f("(", key(), ":", s, ":", t, ")");
+      f(key(), ":", s, ":", t, " ");
       return;
     } else {
       /// complex type
@@ -173,7 +167,7 @@ template <StringLiteral K, typename T> struct Attribute {
 template <StringLiteral K, typename... Attributes> class Object {
 public:
   static constexpr void attributes(auto &&f) {
-    f("{", K.value, ":");
+    f(" {", K.value, " ");
     std::tuple<Attributes...> attrs;
     std::apply(
         [f](auto &&...a) {
@@ -181,7 +175,7 @@ public:
           (a.attributes(f), ...);
         },
         attrs);
-    f("}");
+    f("} ");
   }
 };
 
