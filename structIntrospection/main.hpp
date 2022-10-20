@@ -97,14 +97,42 @@ static constexpr auto createTypeString() {
   return buf;
 }
 
+/*
+https://docs.python.org/3/library/struct.html
+*/
+
 template <typename T> static constexpr void typeChar(char *t, size_t d) {
   t[d] = '0';
-  int end = d+1;
+  int end = d + 1;
   int sslen = 0;
   if constexpr (std::is_floating_point<T>::value) {
-    t[d] = 'f';
+    if constexpr (sizeof(T) <= 4) {
+      t[d] = 'f';
+    } else if (sizeof(T) == 8) {
+      t[d] = 'd';
+    }
   } else if constexpr (std::is_integral<T>::value) {
-    t[d] = 'i';
+    if constexpr (std::is_unsigned<T>::value) {
+      if constexpr (sizeof(T) == 1) {
+        t[d] = 'B';
+      } else if (sizeof(T) == 2) {
+        t[d] = 'H';
+      } else if (sizeof(T) == 4) {
+        t[d] = 'I';
+      } else if (sizeof(T) == 8) {
+        t[d] = 'Q';
+      }
+    } else {
+      if constexpr (sizeof(T) == 1) {
+        t[d] = 'b';
+      } else if (sizeof(T) == 2) {
+        t[d] = 'h';
+      } else if (sizeof(T) == 4) {
+        t[d] = 'i';
+      } else if (sizeof(T) == 8) {
+        t[d] = 'q';
+      }
+    }
   } else if constexpr (std::is_enum<T>::value) {
     using TT = decltype(to_underlying(T{}));
     /// we dont need to know that this is an enum
@@ -136,7 +164,7 @@ template <typename T> static constexpr void typeChar(char *t, size_t d) {
     t[d] = '?';
   }
   // end string depending on added length
-    t[d + end + sslen] = '\0';
+  t[d + end + sslen] = '\0';
 }
 
 template <StringLiteral K, typename T> struct Attribute {
@@ -199,16 +227,16 @@ struct Developer : Object<"Developer", Attribute<"commits", unsigned int>,
   int motivation = 0;
 };
 
-struct Sub : Object<"Sub", Attribute<"a", int>, Attribute<"b", int>> {
+struct Sub : Object<"Sub", Attribute<"a", int>, Attribute<"b", unsigned long>> {
   int a = 0;
-  int b = 0;
+  unsigned long b = 0;
 };
 struct Sub2 : Object<"Sub2", Attribute<"arr", int>> {
   std::array<int, 8> arr;
 };
 
 using Arr = std::array<std::array<uint16_t, 8>, 10>;
-using ArrArrArr = std::array<std::array<std::array<uint8_t, 5>, 2>, 10>;
+using ArrArrArr = std::array<std::array<std::array<float, 5>, 2>, 10>;
 struct Xaxa : Object<"Xaxa", Attribute<"sub", Sub>, Attribute<"some", int[5]>,
                      Attribute<"arrarr", Arr>, Attribute<"sub2", Sub2>,
                      Attribute<"arararar", ArrArrArr>> {
