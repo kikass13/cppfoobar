@@ -18,14 +18,24 @@ template <typename T>
 using element_type_t =
     std::remove_reference_t<decltype(*std::begin(std::declval<T &>()))>;
 
-template <size_t N> struct StringLiteral {
-  constexpr StringLiteral(const char (&str)[N]) { std::copy_n(str, N, value); }
+/////////////////////////////////////////////////////////////////////
+/// from:
+/// https://stackoverflow.com/questions/2033110/passing-a-string-literal-as-a-type-argument-to-a-class-template
+/////////////////////////////////////////////////////////////////////
+template <unsigned N> struct StringLiteral {
+  char buf[N + 1]{};
+  constexpr StringLiteral(char const *src) {
+    { std::copy_n(src, N, buf); }
+  }
   template <typename OtherStringLiteral>
   constexpr bool operator==(const OtherStringLiteral &rhs) const {
-    return std::strcmp(rhs.value, value) == 0;
+    return std::strcmp(rhs.value, buf) == 0;
   }
-  char value[N];
+  constexpr operator char const *() const { return buf; }
 };
+template <unsigned N> StringLiteral(char const (&)[N]) -> StringLiteral<N - 1>;
+
+/////////////////////////////////////////////////////////////////////
 
 template <typename T> constexpr auto sizeof_array(const T &iarray) {
   return (sizeof(iarray) / sizeof(iarray[0]));
@@ -167,10 +177,13 @@ template <typename T> static constexpr void typeChar(char *t, size_t d) {
   t[d + end + sslen] = '\0';
 }
 
-template <StringLiteral K, typename T> struct Attribute {
+template <StringLiteral K, typename T> class Attribute {
+  static constexpr char const *k = K;
+
+public:
   using internalType = T;
+  static constexpr const char *key() { return k; }
   static constexpr size_t getSize() { return sizeof(T); }
-  static constexpr const char *key() { return K.value; }
   static constexpr void attributes(auto &&f) {
     if constexpr (!is_complex_datatype<T>::value) {
       /// simple type
@@ -193,9 +206,13 @@ template <StringLiteral K, typename T> struct Attribute {
 };
 
 template <StringLiteral K, typename... Attributes> class Object {
+  static constexpr char const *k = K;
+
 public:
+  static constexpr const char *key() { return k; }
+  // static constexpr const char *key() { return k; }
   static constexpr void attributes(auto &&f) {
-    f(" {", K.value, " ");
+    f(" {", key(), " ");
     std::tuple<Attributes...> attrs;
     std::apply(
         [f](auto &&...a) {

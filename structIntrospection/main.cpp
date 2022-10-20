@@ -11,5 +11,4 @@ int main() {
 
   std::cout << typeBuffer.get() << std::endl;
   std::cout << "_________________________________________" << std::endl;
-
 }
