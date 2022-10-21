@@ -165,7 +165,7 @@ template <typename T> static constexpr void typeChar(char *t, size_t d) {
     char ss[10];
     sprintf(ss, "/%ld,", size);
     int sslen = strlen(ss);
-    strcpy(&t[d+1], ss);
+    strcpy(&t[d + 1], ss);
     end = strlen(t);
     using arrElemType = element_type_t<T>;
     typeChar<arrElemType>(t, end);
@@ -173,7 +173,6 @@ template <typename T> static constexpr void typeChar(char *t, size_t d) {
     t[d] = '?';
   }
   // end string depending on added length
-  std::cout << t <<std::endl;
   auto tEnd = strlen(t);
   t[tEnd] = '\0';
 }
@@ -199,12 +198,28 @@ public:
       f(key(), ":", s, ":", t, " ");
       return;
     } else {
-      /// complex type
-      T complex;
-      complex.attributes(f);
+      /// is the complex thing derived from Object?
+      constexpr bool x = requires(T && t) { t.attributes(); };
+      if constexpr (x) {
+        /// We can instantiate it and look further
+        T complex;
+        complex.attributes(f);
+      } else {
+        /// this is a garbage placeholder type
+        char t[2] = {'*', '\0'};
+        auto size = getSize();
+        char s[5];
+        sprintf(s, "%ld", size);
+        s[sizeof(s) - 1] = '\0';
+        f(key(), ":", s, ":", t, " ");
+      }
     }
   }
 };
+
+#define STRINGIFY_2(a) #a
+#define STRINGIFY(a, b) STRINGIFY_2(a) STRINGIFY_2(b)
+#define UNIQUE_GARGABE_NAME STRINGIFY(Garbage_, __COUNTER__)
 
 template <StringLiteral K, typename... Attributes> class Object {
   static constexpr char const *k = K;
@@ -224,6 +239,10 @@ public:
     f("} ");
   }
 };
+
+template <typename T>
+class DefaultObjectWrapper
+    : public Object<UNIQUE_GARGABE_NAME, Attribute<"garbage", int>> {};
 
 /// ##################################################
 /// ##################################################
