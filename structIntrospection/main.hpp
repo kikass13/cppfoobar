@@ -114,7 +114,6 @@ https://docs.python.org/3/library/struct.html
 template <typename T> static constexpr void typeChar(char *t, size_t d) {
   t[d] = '0';
   int end = d + 1;
-  int sslen = 0;
   if constexpr (std::is_floating_point<T>::value) {
     if constexpr (sizeof(T) <= 4) {
       t[d] = 'f';
@@ -152,29 +151,31 @@ template <typename T> static constexpr void typeChar(char *t, size_t d) {
   } else if constexpr (std::is_array<T>::value) {
     t[d] = 'a';
     T arr{};
-    using arrElemType = std::remove_reference<decltype(*arr)>::type;
-    typeChar<arrElemType>(t, d + 1);
     auto size = sizeof_array<T>(arr);
+    char ss[10];
+    sprintf(ss, "/%ld,", size);
+    int sslen = strlen(ss);
+    strcpy(&t[1], ss);
     end = strlen(t);
-    char ss[5];
-    sprintf(ss, "/%ld", size);
-    sslen = strlen(ss);
-    strcpy(&t[end], ss);
+    using arrElemType = std::remove_reference<decltype(*arr)>::type;
+    typeChar<arrElemType>(&t[end], d + 1);
   } else if constexpr (notstd::is_array<T>::value) {
-    using arrElemType = element_type_t<T>;
-    t[d] = 'a';
-    typeChar<arrElemType>(t, d + 1);
+    t[d] = 'A';
     auto size = std::tuple_size_v<T>;
+    char ss[10];
+    sprintf(ss, "/%ld,", size);
+    int sslen = strlen(ss);
+    strcpy(&t[d+1], ss);
     end = strlen(t);
-    char ss[5];
-    sprintf(ss, "/%ld", size);
-    sslen = strlen(ss);
-    strcpy(&t[end], ss);
+    using arrElemType = element_type_t<T>;
+    typeChar<arrElemType>(t, end);
   } else {
     t[d] = '?';
   }
   // end string depending on added length
-  t[d + end + sslen] = '\0';
+  std::cout << t <<std::endl;
+  auto tEnd = strlen(t);
+  t[tEnd] = '\0';
 }
 
 template <StringLiteral K, typename T> class Attribute {
@@ -259,7 +260,7 @@ struct Xaxa : Object<"Xaxa", Attribute<"sub", Sub>, Attribute<"some", int[5]>,
                      Attribute<"arararar", ArrArrArr>> {
   Sub s;
   int some[5];
-  Arr arr;
+  Arr arrarr;
   Sub2 sub2;
   ArrArrArr arararar;
 };
