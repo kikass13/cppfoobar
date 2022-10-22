@@ -57,6 +57,44 @@ template <typename T>
 using is_complex_datatype =
     std::integral_constant<bool, std::is_class<T>::value &&
                                      !notstd::is_array<T>::value>;
+
+// Copy src to dest, and return the number of copied characters
+constexpr int constexpr_strcpy(char *dest, const char *src) {
+  int n = 0;
+  while ((*(dest++) = *(src++))) {
+    n++;
+  }
+  return n;
+}
+// Returns the len of str without the null term
+constexpr int constexpr_strlen(const char *str) {
+  int n = 0;
+  while (*str) {
+    str++;
+    n++;
+  }
+  return n;
+}
+// Sets str to value
+constexpr void constexpr_memset(char *str, auto val, auto size) {
+  int n = 0;
+  for (unsigned i = 0; i < size; i++) {
+    *str = val;
+    str++;
+  }
+}
+
+/// from:
+/// https://stackoverflow.com/questions/23999573/convert-a-number-to-a-string-literal-with-constexpr
+template <unsigned... digits> struct to_chars { static const char value[]; };
+template <unsigned... digits>
+constexpr char to_chars<digits...>::value[] = {('0' + digits)..., 0};
+template <unsigned rem, unsigned... digits>
+struct explode : explode<rem / 10, rem % 10, digits...> {};
+template <unsigned... digits>
+struct explode<0, digits...> : to_chars<digits...> {};
+template <unsigned num> struct num_to_string : explode<num> {};
+
 /// ##################################################
 /// ##################################################
 /// ##################################################
@@ -67,14 +105,13 @@ using is_complex_datatype =
 template <size_t N> class Buf {
 public:
   constexpr void copy(const char *src) {
-    auto size = strlen(src);
-    sprintf(&buf[j], "%s", src);
+    auto size = constexpr_strcpy(&buf[j], src);
     j += size;
     buf[j] = '\0';
   }
   constexpr void push(auto c) { buf[j++] = c; }
-  constexpr char *get() { return buf; }
-  constexpr char *data() { return buf; }
+  constexpr const char *get() const { return buf; }
+  constexpr const char *data() const { return buf; }
   constexpr char *consume() {
     clear();
     return buf;
@@ -84,7 +121,7 @@ public:
 
 private:
   char buf[N];
-  size_t j = 0;
+  int j = 0;
 };
 
 template <typename TypeTuple, size_t N>
@@ -147,33 +184,34 @@ template <typename T> static constexpr void typeChar(char *t, size_t d) {
     /// we dont need to know that this is an enum
     // t[d] = 'e';
     typeChar<TT>(t, d);
-    end = strlen(t);
   } else if constexpr (std::is_array<T>::value) {
     t[d] = 'a';
     T arr{};
-    auto size = sizeof_array<T>(arr);
+    constexpr auto size = sizeof_array<T>(arr);
     char ss[10];
-    sprintf(ss, "/%ld,", size);
-    int sslen = strlen(ss);
-    strcpy(&t[1], ss);
-    end = strlen(t);
+    ss[0] = '/';
+    auto sslen = constexpr_strcpy(&ss[1], num_to_string<size>::value);
+    constexpr_strcpy(&t[1], ss);
+    end = constexpr_strlen(t);
     using arrElemType = std::remove_reference<decltype(*arr)>::type;
     typeChar<arrElemType>(&t[end], d + 1);
   } else if constexpr (notstd::is_array<T>::value) {
     t[d] = 'A';
-    auto size = std::tuple_size_v<T>;
+    constexpr auto size = std::tuple_size_v<T>;
     char ss[10];
-    sprintf(ss, "/%ld,", size);
-    int sslen = strlen(ss);
-    strcpy(&t[d + 1], ss);
-    end = strlen(t);
+    ss[0] = '/';
+    auto sslen = constexpr_strcpy(&ss[1], num_to_string<size>::value);
+    ss[1+sslen] = ',';
+    ss[2+sslen] = '\0';
+    constexpr_strcpy(&t[d + 1], ss);
+    end = constexpr_strlen(t);
     using arrElemType = element_type_t<T>;
     typeChar<arrElemType>(t, end);
   } else {
     t[d] = '?';
   }
   // end string depending on added length
-  auto tEnd = strlen(t);
+  auto tEnd = constexpr_strlen(t);
   t[tEnd] = '\0';
 }
 
@@ -183,19 +221,17 @@ template <StringLiteral K, typename T> class Attribute {
 public:
   using internalType = T;
   static constexpr const char *key() { return k; }
-  static constexpr size_t getSize() { return sizeof(T); }
   static constexpr void attributes(auto &&f) {
     if constexpr (!is_complex_datatype<T>::value) {
       /// simple type
-      auto size = getSize();
-      char s[5];
-      sprintf(s, "%ld", size);
-      s[sizeof(s) - 1] = '\0';
+      char ss[10];
+      auto sslen = constexpr_strcpy(ss, num_to_string<sizeof(T)>::value);
+      // sprintf(s, "%ld", size);
+      // ss[sslen] = '\0';
       char t[30];
-      std::memset(t, '\0', sizeof(t));
+      constexpr_memset(t, '\0', sizeof(t));
       typeChar<internalType>(t, 0);
-      t[sizeof(t) - 1] = '\0';
-      f(key(), ":", s, ":", t, " ");
+      f(key(), ":", ss, ":", t, " ");
       return;
     } else {
       /// is the complex thing derived from Object?
@@ -207,11 +243,11 @@ public:
       } else {
         /// this is a garbage placeholder type
         char t[2] = {'*', '\0'};
-        auto size = getSize();
-        char s[5];
-        sprintf(s, "%ld", size);
-        s[sizeof(s) - 1] = '\0';
-        f(key(), ":", s, ":", t, " ");
+        char ss[10];
+        auto sslen = constexpr_strcpy(ss, num_to_string<sizeof(T)>::value);
+        // sprintf(s, "%ld", size);
+        // ss[sslen] = '\0';
+        f(key(), ":", ss, ":", t, " ");
       }
     }
   }

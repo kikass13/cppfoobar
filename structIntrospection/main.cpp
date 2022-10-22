@@ -6,9 +6,10 @@
 #include "Types.hpp"
 
 using AllTestAttributesT = std::tuple<Human, Developer, Xaxa>;
-static auto typeBufferTest = createTypeString<AllTestAttributesT, 1000>();
-
-static auto typeBufferTypes = createTypeString<types::AllTypes, 5000>();
+static constexpr auto typeBufferTest =
+    createTypeString<AllTestAttributesT, 1000>();
+static constexpr auto typeBufferTypes =
+    createTypeString<types::AllTypes, 5000>();
 
 int main() {
   Human h{.age = 10, .name = {'1', '2', '3'}, .r = R::NONE};
