@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "compileTimeCounter.hpp"
 using size_t = std::size_t;
 
 template <typename T>
@@ -202,7 +203,7 @@ template <StringLiteral K, typename T> class Attribute {
 public:
   using internalType = T;
   static constexpr const char *key() { return k; }
-  static constexpr void attributes(auto &&f) {
+  static constexpr void encode(auto &&f) {
     if constexpr (!is_complex_datatype<T>::value) {
       /// simple type
       char ss[10];
@@ -216,11 +217,11 @@ public:
       return;
     } else {
       /// is the complex thing derived from Object?
-      constexpr bool x = requires(T && t, decltype(f) f) { t.attributes(f); };
+      constexpr bool x = requires(T && t, decltype(f) f) { t.encode(f); };
       if constexpr (x) {
         /// We can instantiate it and look further
         T complex;
-        complex.attributes(f);
+        complex.encode(f);
       } else {
         /// this is a garbage placeholder type
         char t[2] = {'*', '\0'};
@@ -238,28 +239,18 @@ template <StringLiteral K, typename... Attributes> class Object {
   static constexpr char const *k = K;
 
 public:
-  static constexpr const char *key() { return k; }
   // static constexpr const char *key() { return k; }
-  template <size_t I> static constexpr void attributes(auto &&f) {
-    f(" {", key(), " ");
+  template <size_t I, StringLiteral KEY = K> static constexpr void encode(auto &&f) {
+    f(" {", KEY, " ");
     std::tuple<Attributes...> attrs;
-    std::apply(
-        [f](auto &&...a) {
-          // using At = typename std::remove_reference<decltype(a)>::value;
-          (a.attributes(f), ...);
-        },
-        attrs);
+    std::apply([f](auto &&...a) { (a.encode(f), ...); }, attrs);
     f("} ");
   }
 };
 
-#define STRINGIFY_2(a) #a
-#define STRINGIFY(a, b) STRINGIFY_2(a) STRINGIFY_2(b)
-#define UNIQUE_GARGABE_NAME(c) STRINGIFY(Garbage_, c)
-
 template <typename T> class DefaultObjectWrapper {
 public:
-  template <size_t I> static constexpr void attributes(auto &&f) {
+  template <size_t I> static constexpr void encode(auto &&f) {
     f(" { ?", num_to_string<I>::value,
       " data:", num_to_string<sizeof(T)>::value, ":? }");
   }
@@ -267,7 +258,7 @@ public:
 
 template <std::size_t I = 0, typename... Ts>
 static constexpr void call_attributes_for_each_type(auto &&out,
-                                           std::tuple<Ts...> tup) {
+                                                    std::tuple<Ts...> tup) {
   if constexpr (I == sizeof...(Ts)) {
     return;
   } else {
@@ -279,13 +270,13 @@ static constexpr void call_attributes_for_each_type(auto &&out,
 template <size_t I>
 static constexpr void callAtributesOnObject(auto o, auto out) {
   constexpr bool x = requires(decltype(o) o, decltype(out) out) {
-    o.template attributes<I>(out);
+    o.template encode<I>(out);
   };
   if constexpr (x) {
-    o.template attributes<I>(out);
+    o.template encode<I>(out);
   } else {
     DefaultObjectWrapper<decltype(o)> wrapper;
-    wrapper.template attributes<I>(out);
+    wrapper.template encode<I>(out);
   }
 };
 
@@ -344,4 +335,9 @@ struct Xaxa : Object<"Xaxa", Attribute<"sub", Sub>, Attribute<"some", int[5]>,
   Arr arrarr;
   Sub2 sub2;
   ArrArrArr arararar;
+};
+
+struct UNKNOWN {
+  int a = 0;
+  unsigned long b = 0;
 };
