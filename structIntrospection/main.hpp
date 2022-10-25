@@ -4,6 +4,7 @@
 #include <cstring>
 #include <tuple>
 #include <type_traits>
+#include <utility>
 
 #include <iostream>
 #include <stdio.h>
@@ -11,12 +12,12 @@
 
 using size_t = std::size_t;
 
-template <typename E> constexpr auto to_underlying(E e) noexcept {
-  return static_cast<std::underlying_type_t<E>>(e);
-}
 template <typename T>
 using element_type_t =
     std::remove_reference_t<decltype(*std::begin(std::declval<T &>()))>;
+template <typename E> constexpr auto to_underlying(E e) noexcept {
+  return static_cast<std::underlying_type_t<E>>(e);
+}
 
 /////////////////////////////////////////////////////////////////////
 /// from:
@@ -124,26 +125,6 @@ private:
   int j = 0;
 };
 
-template <typename TypeTuple, size_t N>
-static constexpr auto createTypeString() {
-  Buf<N> buf;
-  buf.push('{');
-  auto out = [&buf]<typename... Args>(Args... args) {
-    std::apply(
-        [&buf](auto &&...xs) {
-          // ((std::cout << std::forward<decltype(xs)>(xs)), ...);
-          // ((buf[j++] = xs[0]), ...);
-          // ((copyBuf(xs)), ...);
-          ((buf.copy(xs)), ...);
-        },
-        std::tie(args...));
-  };
-  TypeTuple t{};
-  std::apply([&](auto &&...o) { (o.attributes(out), ...); }, t);
-  buf.push('}');
-  return buf;
-}
-
 /*
 https://docs.python.org/3/library/struct.html
 */
@@ -201,8 +182,8 @@ template <typename T> static constexpr void typeChar(char *t, size_t d) {
     char ss[10];
     ss[0] = '/';
     auto sslen = constexpr_strcpy(&ss[1], num_to_string<size>::value);
-    ss[1+sslen] = ',';
-    ss[2+sslen] = '\0';
+    ss[1 + sslen] = ',';
+    ss[2 + sslen] = '\0';
     constexpr_strcpy(&t[d + 1], ss);
     end = constexpr_strlen(t);
     using arrElemType = element_type_t<T>;
@@ -235,7 +216,7 @@ public:
       return;
     } else {
       /// is the complex thing derived from Object?
-      constexpr bool x = requires(T && t) { t.attributes(); };
+      constexpr bool x = requires(T && t, decltype(f) f) { t.attributes(f); };
       if constexpr (x) {
         /// We can instantiate it and look further
         T complex;
@@ -253,17 +234,13 @@ public:
   }
 };
 
-#define STRINGIFY_2(a) #a
-#define STRINGIFY(a, b) STRINGIFY_2(a) STRINGIFY_2(b)
-#define UNIQUE_GARGABE_NAME STRINGIFY(Garbage_, __COUNTER__)
-
 template <StringLiteral K, typename... Attributes> class Object {
   static constexpr char const *k = K;
 
 public:
   static constexpr const char *key() { return k; }
   // static constexpr const char *key() { return k; }
-  static constexpr void attributes(auto &&f) {
+  template <size_t I> static constexpr void attributes(auto &&f) {
     f(" {", key(), " ");
     std::tuple<Attributes...> attrs;
     std::apply(
@@ -276,9 +253,58 @@ public:
   }
 };
 
-template <typename T>
-class DefaultObjectWrapper
-    : public Object<UNIQUE_GARGABE_NAME, Attribute<"garbage", int>> {};
+#define STRINGIFY_2(a) #a
+#define STRINGIFY(a, b) STRINGIFY_2(a) STRINGIFY_2(b)
+#define UNIQUE_GARGABE_NAME(c) STRINGIFY(Garbage_, c)
+
+template <typename T> class DefaultObjectWrapper {
+public:
+  template <size_t I> static constexpr void attributes(auto &&f) {
+    f(" { ?", num_to_string<I>::value,
+      " data:", num_to_string<sizeof(T)>::value, ":? }");
+  }
+};
+
+template <std::size_t I = 0, typename... Ts>
+static constexpr void call_attributes_for_each_type(auto &&out,
+                                           std::tuple<Ts...> tup) {
+  if constexpr (I == sizeof...(Ts)) {
+    return;
+  } else {
+    callAtributesOnObject<I>(std::get<I>(tup), out);
+    call_attributes_for_each_type<I + 1>(out, tup);
+  }
+}
+
+template <size_t I>
+static constexpr void callAtributesOnObject(auto o, auto out) {
+  constexpr bool x = requires(decltype(o) o, decltype(out) out) {
+    o.template attributes<I>(out);
+  };
+  if constexpr (x) {
+    o.template attributes<I>(out);
+  } else {
+    DefaultObjectWrapper<decltype(o)> wrapper;
+    wrapper.template attributes<I>(out);
+  }
+};
+
+template <typename TypeTuple, size_t N>
+static constexpr auto createTypeString() {
+  Buf<N> buf;
+  buf.push('{');
+  auto out = [&buf]<typename... Args>(Args... args) {
+    std::apply([&buf](auto &&...xs) { ((buf.copy(xs)), ...); },
+               std::tie(args...));
+  };
+  TypeTuple t{};
+  /// apply does not provide a running index
+  // std::apply([&](auto &&...o) { (call(o, out), ...); }, t);
+  /// use self made tuple iterator for that
+  call_attributes_for_each_type(out, t);
+  buf.push('}');
+  return buf;
+}
 
 /// ##################################################
 /// ##################################################
