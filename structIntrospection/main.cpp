@@ -10,8 +10,8 @@
 using AllTestAttributesT = std::tuple<Human, Developer, Xaxa>;
 static constexpr auto typeBufferTest =
     createTypeString<AllTestAttributesT, 1000>();
-static constexpr auto typeBufferTypes =
-    createTypeString<types::AllTypes, 5000>();
+// static constexpr auto typeBufferTypes =
+//     createTypeString<types::AllTypes, 5000>();
 
 using MyMessageDict1 = IOList<IO<Sub, "OTHER_NAME_FOR_SUB">, IO<Sub2, "OTHER_NAME_FOR_SUB2">,IO<UNKNOWN, "UNKNOWN_OVEWRITE">, IO<UNKNOWN, "BBBBB">>;
 static MyMessageDict1 ios;
@@ -28,9 +28,10 @@ using MyNodeIoMessagingDict = IOList<
     IO<VehicleStateFlags, "vehicleStateFlags">, IO<DrivingMode, "drivingMode">, IO<NotificationData, "notifications">,
     IO<bool, "externalDcMotorEnable">, IO<DcMotorStateData, "dcMotorStates">,
     IO<DcMotorStateData, "externalDcMotorStates">, IO<DcLimitSwitchesData, "externalLimitSwitches">,
-    IO<DcLimitSwitchesData, "limitSwitches">, IO<BrakeInfo, "brakeInfo">, IO<BatteryStateList, "batteryChargeStates">,
-    IO<bool, "batteryLockEnable">, IO<BatteryStateWrapper, "batteryLockState">, IO<BatteryDoorInfo, "batteryDoorInfo">,
+    IO<DcLimitSwitchesData, "limitSwitches">, IO<BrakeInfo, "brakeInfo">, IO<BatteryStates, "batteryChargeStates">,
+    IO<bool, "batteryLockEnable">, IO<BatteryLockState, "batteryLockState">, IO<BatteryDoorInfoWrapper, "batteryDoorInfo">,
     IO<bool, "elmoPcbProxyEnabled">>;
+
 static MyNodeIoMessagingDict ios2;
 
 int main() {
@@ -39,10 +40,13 @@ int main() {
   std::cout << typeBufferTest.get() << std::endl;
   std::cout << "_________________________________________" << std::endl;
   std::cout << MyMessageDict1::getTypeString() << std::endl; /// C: works
+  std::cout << "RESULT SIZE: " << sizeof(ios) << std::endl;
   std::cout << "_________________________________________" << std::endl;
   std::cout << MyNodeIoMessagingDict::getTypeString() << std::endl;
   std::cout << "_________________________________________" << std::endl;
-  ios2.printContents();
+  // ios2.printContents();
+  // std::cout << "_________________________________________" << std::endl;
+  std::cout << "RESULT SIZE: " << sizeof(ios2) << std::endl;
 }
 
 /*

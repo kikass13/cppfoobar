@@ -252,7 +252,7 @@ template <typename T> class DefaultObjectWrapper {
 public:
   template <size_t I> static constexpr void encode(auto &&f) {
     f(" { ?", num_to_string<I>::value,
-      " data:", num_to_string<alignof(T)>::value, ":? }");
+      " data:", num_to_string<sizeof(T)>::value, ":? }");
   }
 };
 
@@ -304,29 +304,37 @@ static constexpr auto createTypeString() {
 /// ##################################################
 
 enum class R : uint8_t { NONE, KAUKASIAN, ASIAN, AFRICAN };
+#pragma pack(push, 1)
 struct Human : Object<"Human", Attribute<"age", int>,
                       Attribute<"name", char[20]>, Attribute<"r", R>> {
   int age = 0;
   char name[20] = "";
   R r = R::NONE;
 };
-
+#pragma pack(push, 1)
 struct Developer : Object<"Developer", Attribute<"commits", unsigned int>,
                           Attribute<"motivation", int>> {
   unsigned int commits = 0;
   int motivation = 0;
 };
+#pragma pack(pop)
 
+#pragma pack(push, 1)
 struct Sub : Object<"Sub", Attribute<"a", int>, Attribute<"b", unsigned long>> {
   int a = 0;
   unsigned long b = 0;
 };
-struct Sub2 : Object<"Sub2", Attribute<"arr", int>> {
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+struct Sub2 : Object<"Sub2", Attribute<"arr", std::array<int, 8>>> {
   std::array<int, 8> arr;
 };
+#pragma pack(pop)
 
 using Arr = std::array<std::array<uint16_t, 8>, 10>;
 using ArrArrArr = std::array<std::array<std::array<float, 5>, 2>, 10>;
+#pragma pack(push, 1)
 struct Xaxa : Object<"Xaxa", Attribute<"sub", Sub>, Attribute<"some", int[5]>,
                      Attribute<"arrarr", Arr>, Attribute<"sub2", Sub2>,
                      Attribute<"arararar", ArrArrArr>> {
@@ -336,8 +344,11 @@ struct Xaxa : Object<"Xaxa", Attribute<"sub", Sub>, Attribute<"some", int[5]>,
   Sub2 sub2;
   ArrArrArr arararar;
 };
+#pragma pack(pop)
 
+#pragma pack(push, 1)
 struct UNKNOWN {
   int a = 0;
   unsigned long b = 0;
 };
+#pragma pack(pop)
