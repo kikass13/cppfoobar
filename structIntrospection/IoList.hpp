@@ -8,6 +8,8 @@
 
 #include "main.hpp"
 
+#include <iostream>
+
 namespace details {
 template <StringLiteral T, class A, StringLiteral B> constexpr bool check() {
   return T == B;
@@ -45,12 +47,14 @@ template <class T, StringLiteral K> class IO {
 public:
   constexpr IO() : data_{} {}
   constexpr ~IO(){};
-  void set(const T &d) { data_ = d; }
-  const T &get() { return data_; }
-  static constexpr auto key() { return K.value; }
+  // void set(const T &d) { data_ = d; }
+  // const T &get() { return data_; }
+  static constexpr auto key() { return K.buf; }
   template <size_t I> static constexpr void encode(auto f) {
     using FType = decltype(f);
-    constexpr bool x = requires(T && t, FType f) { t.template encode<I, K>(f); };
+    constexpr bool x = requires(T && t, FType f) {
+      t.template encode<I, K>(f);
+    };
     if constexpr (x) {
       /// encode type info of IO attribute as Object defined by T
       return T::template encode<I, K>(f);
@@ -66,22 +70,22 @@ template <class... IOs> class IOList {
 public:
   constexpr IOList() {}
   template <typename T, StringLiteral K> const auto &get() {
-    return std::get<IO<T, K>>(ios_).get();
+    return std::get<IO<T, K>>(ios_).data_;
   }
   template <StringLiteral K> const auto &get() {
     auto someIO = details::get_element_based_on_2nd_entry<K>(ios_);
     /// someIO will be a copy of the tuple element with the correct
     /// type we need to get our correct ref with that type
-    return std::get<decltype(someIO)>(ios_).get();
+    return std::get<decltype(someIO)>(ios_).data_;
   }
   template <typename T, StringLiteral K> void set(const auto &v) {
-    std::get<IO<T, K>>(ios_).set(v);
+    std::get<IO<T, K>>(ios_).data_ = v;
   }
   template <StringLiteral K> void set(const auto &v) {
     auto someIO = details::get_element_based_on_2nd_entry<K>(ios_);
     /// someIO will be a copy of the tuple element with the
     /// correct type we need to get our correct ref with that type
-    std::get<decltype(someIO)>(ios_).set(v);
+    std::get<decltype(someIO)>(ios_).data_ = v;
   }
 
   constexpr auto keys() {
@@ -89,39 +93,22 @@ public:
     return details::get_array_from_tuple(keyTuple, [](auto k) { return k; });
   }
 
-  // static constexpr auto getTypeString() {
-  //   // return typeStringBuf.get();
-  //   return createTypeString<std::tuple<IOs...>, 2000>();
-  // }
-
   static constexpr auto getTypeString() { return typeStringBuf.get(); }
   static constexpr auto getTypeStringSize() { return typeStringSize; }
 
+  void printContents() {
+    std::apply(
+        [](auto &&...io) {
+          ((std::cout << io.key() << ": " << sizeof(decltype(io.data_)) << std::endl), ...); 
+        },
+        ios_);
+  }
+
 private:
   static constexpr auto typeStringBuf =
-      createTypeString<std::tuple<IOs...>, 2000>();
+      createTypeString<std::tuple<IOs...>, 5000>();
   static constexpr auto typeStringSize = constexpr_strlen(getTypeString());
   std::tuple<IOs...> ios_;
 };
-
-// template <typename IoList, size_t N>
-// static constexpr auto createTypeStringFromIos() {
-//   Buf<N> buf;
-//   buf.push('{');
-//   auto out = [&buf]<typename... Args>(Args... args) {
-//     std::apply(
-//         [&buf](auto &&...xs) {
-//           // ((std::cout << std::forward<decltype(xs)>(xs)), ...);
-//           // ((buf[j++] = xs[0]), ...);
-//           // ((copyBuf(xs)), ...);
-//           ((buf.copy(xs)), ...);
-//         },
-//         std::tie(args...));
-//   };
-//   IoList t;
-//   std::apply([&](auto &&...o) { (o.encode(out), ...); }, t);
-//   buf.push('}');
-//   return buf;
-// }
 
 typedef IOList<> NoIOs;

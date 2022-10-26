@@ -5,34 +5,44 @@
 #include "main.hpp"
 #include "IoList.hpp"
 
+#include "Types.hpp"
+
 using AllTestAttributesT = std::tuple<Human, Developer, Xaxa>;
 static constexpr auto typeBufferTest =
     createTypeString<AllTestAttributesT, 1000>();
-// static constexpr auto typeBufferTypes =
-//     createTypeString<types::AllTypes, 5000>();
+static constexpr auto typeBufferTypes =
+    createTypeString<types::AllTypes, 5000>();
 
 using MyMessageDict1 = IOList<IO<Sub, "OTHER_NAME_FOR_SUB">, IO<Sub2, "OTHER_NAME_FOR_SUB2">,IO<UNKNOWN, "UNKNOWN_OVEWRITE">, IO<UNKNOWN, "BBBBB">>;
 static MyMessageDict1 ios;
-// auto TESTA = MyMessageDict::createTypeStringInternal<2000>(); /// A: works 
-// auto TESTB = ios.createTypeStringInternal<2000>(); /// B: works
-// auto TESTC = ios.getTypeString(); /// C:
-// static constexpr auto TESTC = ios.getTypeString(); /// C:
-// static constexpr auto TESTC = createTypeStringFromIos<MyMessageDict, 2000>(); /// C:
-// static auto SIZEC = constexpr_strlen(TESTC.get());
+
+using MyNodeIoMessagingDict = IOList<
+    IO<IndicatorData, "indicators">, IO<IndicatorData, "externalIndicators">,
+    IO<ProcessedIndicatorData, "processedIndicators">, IO<FuseStateData, "fuseStatesOut">,
+    IO<FuseStateData, "fuseStatesIn">, IO<VehicleData, "vehicleData">, IO<bool, "externalVehicleDataActive">,
+    IO<VehicleData, "externalVehicleData">, IO<SpsStateData, "spsStateData">, IO<ImuData, "processedImuData">,
+    IO<OrientationData, "orientationData">, IO<DrawbarControllerData, "drawbarControllerData">,
+    IO<bool, "externalTorqueCommandActive">, IO<float, "externalDriveTorque">, IO<int, "externalBrakePosition">,
+    IO<DriverData, "driverData">, IO<DriveMotorInfo, "driveMotorInfoLeft">, IO<DriveMotorInfo, "driveMotorInfoRight">,
+    IO<bool, "externalVehicleStateFlagsEnable">, IO<VehicleStateFlags, "externalVehicleStateFlags">,
+    IO<VehicleStateFlags, "vehicleStateFlags">, IO<DrivingMode, "drivingMode">, IO<NotificationData, "notifications">,
+    IO<bool, "externalDcMotorEnable">, IO<DcMotorStateData, "dcMotorStates">,
+    IO<DcMotorStateData, "externalDcMotorStates">, IO<DcLimitSwitchesData, "externalLimitSwitches">,
+    IO<DcLimitSwitchesData, "limitSwitches">, IO<BrakeInfo, "brakeInfo">, IO<BatteryStateList, "batteryChargeStates">,
+    IO<bool, "batteryLockEnable">, IO<BatteryStateWrapper, "batteryLockState">, IO<BatteryDoorInfo, "batteryDoorInfo">,
+    IO<bool, "elmoPcbProxyEnabled">>;
+static MyNodeIoMessagingDict ios2;
 
 int main() {
   Human h{.age = 10, .name = {'1', '2', '3'}, .r = R::NONE};
 
   std::cout << typeBufferTest.get() << std::endl;
   std::cout << "_________________________________________" << std::endl;
-  // std::cout << typeBufferTypes.get() << std::endl;
-  // std::cout << "_________________________________________" << std::endl;
-  
-  // std::cout << TESTA.get() << std::endl; /// A: works
-  // std::cout << TESTB.get() << std::endl; /// B: works
-  // std::cout << TESTC.get() << std::endl; /// C: works
   std::cout << MyMessageDict1::getTypeString() << std::endl; /// C: works
   std::cout << "_________________________________________" << std::endl;
+  std::cout << MyNodeIoMessagingDict::getTypeString() << std::endl;
+  std::cout << "_________________________________________" << std::endl;
+  ios2.printContents();
 }
 
 /*

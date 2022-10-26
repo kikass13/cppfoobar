@@ -10,7 +10,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "compileTimeCounter.hpp"
 using size_t = std::size_t;
 
 template <typename T>
@@ -240,7 +239,8 @@ template <StringLiteral K, typename... Attributes> class Object {
 
 public:
   // static constexpr const char *key() { return k; }
-  template <size_t I, StringLiteral KEY = K> static constexpr void encode(auto &&f) {
+  template <size_t I, StringLiteral KEY = K>
+  static constexpr void encode(auto &&f) {
     f(" {", KEY, " ");
     std::tuple<Attributes...> attrs;
     std::apply([f](auto &&...a) { (a.encode(f), ...); }, attrs);
@@ -252,7 +252,7 @@ template <typename T> class DefaultObjectWrapper {
 public:
   template <size_t I> static constexpr void encode(auto &&f) {
     f(" { ?", num_to_string<I>::value,
-      " data:", num_to_string<sizeof(T)>::value, ":? }");
+      " data:", num_to_string<alignof(T)>::value, ":? }");
   }
 };
 
