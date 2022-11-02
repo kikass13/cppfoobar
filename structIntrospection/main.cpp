@@ -2,10 +2,18 @@
 #include <cstring>
 #include <iostream>
 
-#include "main.hpp"
 #include "IoList.hpp"
+#include "main.hpp"
 
 #include "Types.hpp"
+
+/// from:
+/// https://stackoverflow.com/questions/6357031/how-do-you-convert-a-byte-array-to-a-hexadecimal-string-in-c/17147874#17147874
+static constexpr void btox(char *xp, const char *bb, int n) {
+  const char xx[] = "0123456789ABCDEF";
+  while (--n >= 0)
+    xp[n] = xx[(bb[n >> 1] >> ((1 - (n & 1)) << 2)) & 0xF];
+}
 
 using AllTestAttributesT = std::tuple<Human, Developer, Xaxa>;
 static constexpr auto typeBufferTest =
@@ -13,29 +21,59 @@ static constexpr auto typeBufferTest =
 // static constexpr auto typeBufferTypes =
 //     createTypeString<types::AllTypes, 5000>();
 
-using MyMessageDict1 = IOList<IO<Sub, "OTHER_NAME_FOR_SUB">, IO<Sub2, "OTHER_NAME_FOR_SUB2">,IO<UNKNOWN, "UNKNOWN_OVEWRITE">, IO<UNKNOWN, "BBBBB">>;
+using MyMessageDict1 =
+    IOList<IO<Sub, "OTHER_NAME_FOR_SUB">, IO<Sub2, "OTHER_NAME_FOR_SUB2">,
+           IO<UNKNOWN, "UNKNOWN_OVEWRITE">, IO<UNKNOWN, "BBBBB">,
+           IO<Sub, "END">>;
 static MyMessageDict1 ios;
 
 using MyNodeIoMessagingDict = IOList<
-    IO<IndicatorData, "indicators">, IO<IndicatorData, "externalIndicators">,
-    IO<ProcessedIndicatorData, "processedIndicators">, IO<FuseStateData, "fuseStatesOut">,
-    IO<FuseStateData, "fuseStatesIn">, IO<VehicleData, "vehicleData">, IO<bool, "externalVehicleDataActive">,
-    IO<VehicleData, "externalVehicleData">, IO<SpsStateData, "spsStateData">, IO<ImuData, "processedImuData">,
-    IO<OrientationData, "orientationData">, IO<DrawbarControllerData, "drawbarControllerData">,
-    IO<bool, "externalTorqueCommandActive">, IO<float, "externalDriveTorque">, IO<int, "externalBrakePosition">,
-    IO<DriverData, "driverData">, IO<DriveMotorInfo, "driveMotorInfoLeft">, IO<DriveMotorInfo, "driveMotorInfoRight">,
-    IO<bool, "externalVehicleStateFlagsEnable">, IO<VehicleStateFlags, "externalVehicleStateFlags">,
-    IO<VehicleStateFlags, "vehicleStateFlags">, IO<DrivingMode, "drivingMode">, IO<NotificationData, "notifications">,
-    IO<bool, "externalDcMotorEnable">, IO<DcMotorStateData, "dcMotorStates">,
-    IO<DcMotorStateData, "externalDcMotorStates">, IO<DcLimitSwitchesData, "externalLimitSwitches">,
-    IO<DcLimitSwitchesData, "limitSwitches">, IO<BrakeInfo, "brakeInfo">, IO<BatteryStates, "batteryChargeStates">,
-    IO<bool, "batteryLockEnable">, IO<BatteryLockState, "batteryLockState">, IO<BatteryDoorInfoWrapper, "batteryDoorInfo">,
-    IO<bool, "elmoPcbProxyEnabled">>;
+    IO<IndicatorData, "BEGIN">, IO<IndicatorData, "externalIndicators">,
+    IO<ProcessedIndicatorData, "processedIndicators">,
+    IO<FuseStateData, "fuseStatesOut">, IO<FuseStateData, "fuseStatesIn">,
+    IO<VehicleData, "vehicleData">, IO<bool, "externalVehicleDataActive">,
+    IO<VehicleData, "externalVehicleData">, IO<SpsStateData, "spsStateData">,
+    IO<ImuData, "processedImuData">, IO<OrientationData, "orientationData">,
+    IO<DrawbarControllerData, "drawbarControllerData">,
+    IO<bool, "externalTorqueCommandActive">, IO<float, "externalDriveTorque">,
+    IO<int, "externalBrakePosition">, IO<DriverData, "driverData">,
+    IO<DriveMotorInfo, "driveMotorInfoLeft">,
+    IO<DriveMotorInfo, "driveMotorInfoRight">, IO<IndicatorData, "MID1">,
+    IO<bool, "externalVehicleStateFlagsEnable">,
+    IO<VehicleStateFlags, "externalVehicleStateFlags">,
+    IO<VehicleStateFlags, "vehicleStateFlags">, IO<DrivingMode, "drivingMode">,
+    IO<NotificationData, "notifications">, IO<bool, "externalDcMotorEnable">,
+    IO<DcMotorStateData, "dcMotorStates">, IO<IndicatorData, "MID2">,
+    IO<DcMotorStateData, "externalDcMotorStates">,
+    IO<DcLimitSwitchesData, "externalLimitSwitches">,
+    IO<DcLimitSwitchesData, "limitSwitches">, IO<BrakeInfo, "brakeInfo">,
+    IO<BatteryStates, "batteryChargeStates">, IO<bool, "batteryLockEnable">,
+    IO<BatteryLockState, "batteryLockState">,
+    IO<BatteryDoorInfoWrapper, "batteryDoorInfo">,
+    IO<bool, "elmoPcbProxyEnabled">, IO<IndicatorData, "END">>;
 
 static MyNodeIoMessagingDict ios2;
 
+char packedData[ios.size()] = {};
+static constexpr size_t SIZE = ios.size() * 2;
+char bufferToChar[SIZE + 1] = {};
+char *bufferToCharPtr = (char *)((long unsigned int)(bufferToChar));
+
+char packedData2[ios2.size()] = {};
+static constexpr size_t SIZE2 = ios2.size() * 2;
+char bufferToChar2[SIZE2 + 1] = {};
+char *bufferToCharPtr2 = (char *)((long unsigned int)(bufferToChar2));
+
 int main() {
   Human h{.age = 10, .name = {'1', '2', '3'}, .r = R::NONE};
+
+  IndicatorData id;
+  id.blinker = static_cast<Blinker>(0xff);
+  id.hazards = static_cast<Blinker>(0xaa);
+  ios2.set<"BEGIN">(id);
+  ios2.set<"MID1">(id);
+  ios2.set<"MID2">(id);
+  ios2.set<"END">(id);
 
   std::cout << typeBufferTest.get() << std::endl;
   std::cout << "_________________________________________" << std::endl;
@@ -46,7 +84,23 @@ int main() {
   std::cout << "_________________________________________" << std::endl;
   // ios2.printContents();
   // std::cout << "_________________________________________" << std::endl;
-  std::cout << "RESULT SIZE: " << sizeof(ios2) << std::endl;
+  std::cout << "1 RESULT SIZE: " << ios.size() << std::endl;
+  std::cout << "1 CHAR BUF SIZE: " << SIZE + 1 << std::endl;
+  ios.pack(packedData);
+  btox(bufferToCharPtr, packedData, SIZE); /// faster
+  bufferToCharPtr[SIZE] = '\0';
+  std::cout << "_________________________________________" << std::endl;
+  std::cout << bufferToCharPtr << std::endl;
+  std::cout << "_________________________________________" << std::endl;
+  std::cout << "_________________________________________" << std::endl;
+  std::cout << "2 RESULT SIZE: " << ios2.size() << std::endl;
+  std::cout << "2 CHAR BUF SIZE: " << SIZE2 + 1 << std::endl;
+  ios2.pack(packedData2);
+  btox(bufferToCharPtr2, packedData2, SIZE2); /// faster
+  bufferToCharPtr2[SIZE2] = '\0';
+  std::cout << "_________________________________________" << std::endl;
+  std::cout << bufferToCharPtr2 << std::endl;
+  std::cout << "_________________________________________" << std::endl;
 }
 
 /*

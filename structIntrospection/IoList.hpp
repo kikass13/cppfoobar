@@ -96,12 +96,48 @@ public:
   static constexpr auto getTypeString() { return typeStringBuf.get(); }
   static constexpr auto getTypeStringSize() { return typeStringSize; }
 
-  void printContents() {
-    std::apply(
-        [](auto &&...io) {
-          ((std::cout << io.key() << ": " << sizeof(decltype(io.data_)) << std::endl), ...); 
-        },
-        ios_);
+  // void printContents() {
+  //   std::apply(
+  //       [](auto &&...io) {
+  //         ((std::cout << io.key() << ": " << sizeof(decltype(io.data_)) <<
+  //         std::endl), ...);
+  //       },
+  //       ios_);
+  // }
+
+  // size_t size() const {
+  //   size_t c = 0;
+  //   std::apply([&c](auto &&...io) { ((c += sizeof(decltype(io.data_))), ...);
+  //   },
+  //              ios_);
+  //   return c;
+  // }
+  static constexpr size_t size() {
+    // size_t c = 0;
+    // auto t = std::tuple<IOs...>{};
+    // std::apply([&c](auto &&...io) { ((c += sizeof(decltype(io.data_))), ...);
+    // },
+    //            t);
+    // return c;
+    return sizeof(std::tuple<IOs...>);
+  }
+
+  const char *data() const {
+    const char *ptr = reinterpret_cast<const char *>(std::get<0>(ios_));
+    return ptr;
+  }
+
+  void pack(char *dest) {
+    size_t c = 0;
+    std::apply([&](auto &&...io) { ((pack_(dest, c, io)), ...); }, ios_);
+  }
+
+private:
+  void pack_(char *dest, size_t &c, auto &&io) {
+    static constexpr size_t size = sizeof(io.data_);
+    // std::cout << "pack: " << size << " at " << c << std::endl;
+    std::memcpy(&dest[c], &io.data_, size);
+    c += size;
   }
 
 private:

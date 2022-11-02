@@ -30,7 +30,7 @@ template <unsigned N> struct StringLiteral {
   }
   template <typename OtherStringLiteral>
   constexpr bool operator==(const OtherStringLiteral &rhs) const {
-    return std::strcmp(rhs.value, buf) == 0;
+    return std::strcmp(rhs.buf, buf) == 0;
   }
   constexpr operator char const *() const { return buf; }
 };
@@ -190,6 +190,8 @@ template <typename T> static constexpr void typeChar(char *t, size_t d) {
     typeChar<arrElemType>(t, end);
   } else {
     t[d] = '?';
+    // t[d+1] = '/';
+    // constexpr_strcpy(&t[d+2], num_to_string<sizeof(T)>::value);
   }
   // end string depending on added length
   auto tEnd = constexpr_strlen(t);
@@ -321,14 +323,14 @@ struct Developer : Object<"Developer", Attribute<"commits", unsigned int>,
 
 #pragma pack(push, 1)
 struct Sub : Object<"Sub", Attribute<"a", int>, Attribute<"b", unsigned long>> {
-  int a = 0;
-  unsigned long b = 0;
+  int a = 0xff;
+  unsigned long b = 0xaa;
 };
 #pragma pack(pop)
 
 #pragma pack(push, 1)
-struct Sub2 : Object<"Sub2", Attribute<"arr", std::array<int, 8>>> {
-  std::array<int, 8> arr;
+struct Sub2 : Object<"Sub2", Attribute<"arr", int[8]>> {
+  int arr[8] = {0,1,2,3,4,5,6,7};
 };
 #pragma pack(pop)
 
@@ -348,7 +350,7 @@ struct Xaxa : Object<"Xaxa", Attribute<"sub", Sub>, Attribute<"some", int[5]>,
 
 #pragma pack(push, 1)
 struct UNKNOWN {
-  int a = 0;
-  unsigned long b = 0;
+  int a = 0x0a;
+  unsigned long b = 0x0b;
 };
 #pragma pack(pop)
