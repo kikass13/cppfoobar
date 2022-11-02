@@ -217,12 +217,12 @@ public:
       f(key(), ":", ss, ":", t, " ");
       return;
     } else {
-      /// is the complex thing derived from Object?
-      constexpr bool x = requires(T && t, decltype(f) f) { t.encode(f); };
+      // / is the complex thing derived from Object?
+      constexpr bool x = requires(T && t, decltype(f) f) { t.template encode<0>(f); };
       if constexpr (x) {
         /// We can instantiate it and look further
         T complex;
-        complex.encode(f);
+        complex.template encode<0>(f);
       } else {
         /// this is a garbage placeholder type
         char t[2] = {'*', '\0'};
@@ -330,7 +330,7 @@ struct Sub : Object<"Sub", Attribute<"a", int>, Attribute<"b", unsigned long>> {
 
 #pragma pack(push, 1)
 struct Sub2 : Object<"Sub2", Attribute<"arr", int[8]>> {
-  int arr[8] = {0,1,2,3,4,5,6,7};
+  int arr[8] = {0, 1, 2, 3, 4, 5, 6, 7};
 };
 #pragma pack(pop)
 
@@ -352,5 +352,16 @@ struct Xaxa : Object<"Xaxa", Attribute<"sub", Sub>, Attribute<"some", int[5]>,
 struct UNKNOWN {
   int a = 0x0a;
   unsigned long b = 0x0b;
+};
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+struct A : Object<"A", Attribute<"v", int>>{
+  int v = 1337;
+};
+#pragma pack(pop)
+#pragma pack(push, 1)
+struct B : Object<"B", Attribute<"a", A>>{
+  A a;
 };
 #pragma pack(pop)

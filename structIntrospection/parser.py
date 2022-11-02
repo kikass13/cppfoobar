@@ -73,9 +73,10 @@ class LayoutParser:
     def convertAttribute(self, e):
         a = None
         try:
+            print(a, e)
             a = Attribute(e)
-        except:
-            pass
+        except Exception as ee:
+            print(ee)
         return a
     def addAttribute(self, d, a, keychain):
         ### add attribute to given dict
@@ -155,6 +156,7 @@ def main():
     string = "{ {Human age:4:i name:20:ab/20 r:1:B }  {Developer commits:4:I motivation:4:i }  {Xaxa  {Sub a:4:i b:8:Q } some:20:ai/5 arrarr:160:aaH/8/10  {Sub2 arr:4:i } arararar:400:aaaf/5/2/10 } }"
     lp = LayoutParser()
     lp.layout(string)
+    lp.printLayout()
 
     stream = bytearray([0,0,1,255,  1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, ])
     bp = BinaryParser(lp)
