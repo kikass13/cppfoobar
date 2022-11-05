@@ -5,7 +5,7 @@
 #include "IoList.hpp"
 #include "main.hpp"
 
-#include "Types.hpp"
+// #include "Types.hpp"
 
 /// from:
 /// https://stackoverflow.com/questions/6357031/how-do-you-convert-a-byte-array-to-a-hexadecimal-string-in-c/17147874#17147874
@@ -27,60 +27,60 @@ using MyMessageDict1 =
            IO<Sub, "END">>;
 static MyMessageDict1 ios;
 
-using MyNodeIoMessagingDict = IOList<
-    IO<IndicatorData, "BEGIN">, IO<IndicatorData, "externalIndicators">,
-    IO<ProcessedIndicatorData, "processedIndicators">,
-    IO<FuseStateData, "fuseStatesOut">, IO<FuseStateData, "fuseStatesIn">,
-    IO<VehicleData, "vehicleData">, IO<bool, "externalVehicleDataActive">,
-    IO<VehicleData, "externalVehicleData">, IO<SpsStateData, "spsStateData">,
-    IO<ImuData, "processedImuData">, IO<OrientationData, "orientationData">,
-    IO<DrawbarControllerData, "drawbarControllerData">,
-    IO<bool, "externalTorqueCommandActive">, IO<float, "externalDriveTorque">,
-    IO<int, "externalBrakePosition">, IO<DriverData, "driverData">,
-    IO<DriveMotorInfo, "driveMotorInfoLeft">,
-    IO<DriveMotorInfo, "driveMotorInfoRight">, IO<IndicatorData, "MID1">,
-    IO<bool, "externalVehicleStateFlagsEnable">,
-    IO<VehicleStateFlags, "externalVehicleStateFlags">,
-    IO<VehicleStateFlags, "vehicleStateFlags">, IO<DrivingMode, "drivingMode">,
-    IO<NotificationData, "notifications">, IO<bool, "externalDcMotorEnable">,
-    IO<DcMotorStateData, "dcMotorStates">, IO<IndicatorData, "MID2">,
-    IO<DcMotorStateData, "externalDcMotorStates">,
-    IO<DcLimitSwitchesData, "externalLimitSwitches">,
-    IO<DcLimitSwitchesData, "limitSwitches">, IO<BrakeInfo, "brakeInfo">,
-    IO<BatteryStates, "batteryChargeStates">, IO<bool, "batteryLockEnable">,
-    IO<BatteryLockState, "batteryLockState">,
-    IO<BatteryDoorInfoWrapper, "batteryDoorInfo">,
-    IO<bool, "elmoPcbProxyEnabled">, IO<IndicatorData, "END">>;
+// using MyNodeIoMessagingDict = IOList<
+//     IO<IndicatorData, "BEGIN">, IO<IndicatorData, "externalIndicators">,
+//     IO<ProcessedIndicatorData, "processedIndicators">,
+//     IO<FuseStateData, "fuseStatesOut">, IO<FuseStateData, "fuseStatesIn">,
+//     IO<VehicleData, "vehicleData">, IO<bool, "externalVehicleDataActive">,
+//     IO<VehicleData, "externalVehicleData">, IO<SpsStateData, "spsStateData">,
+//     IO<ImuData, "processedImuData">, IO<OrientationData, "orientationData">,
+//     IO<DrawbarControllerData, "drawbarControllerData">,
+//     IO<bool, "externalTorqueCommandActive">, IO<float, "externalDriveTorque">,
+//     IO<int, "externalBrakePosition">, IO<DriverData, "driverData">,
+//     IO<DriveMotorInfo, "driveMotorInfoLeft">,
+//     IO<DriveMotorInfo, "driveMotorInfoRight">, IO<IndicatorData, "MID1">,
+//     IO<bool, "externalVehicleStateFlagsEnable">,
+//     IO<VehicleStateFlags, "externalVehicleStateFlags">,
+//     IO<VehicleStateFlags, "vehicleStateFlags">, IO<DrivingMode, "drivingMode">,
+//     IO<NotificationData, "notifications">, IO<bool, "externalDcMotorEnable">,
+//     IO<DcMotorStateData, "dcMotorStates">, IO<IndicatorData, "MID2">,
+//     IO<DcMotorStateData, "externalDcMotorStates">,
+//     IO<DcLimitSwitchesData, "externalLimitSwitches">,
+//     IO<DcLimitSwitchesData, "limitSwitches">, IO<BrakeInfo, "brakeInfo">,
+//     IO<BatteryStates, "batteryChargeStates">, IO<bool, "batteryLockEnable">,
+//     IO<BatteryLockState, "batteryLockState">,
+//     IO<BatteryDoorInfoWrapper, "batteryDoorInfo">,
+//     IO<bool, "elmoPcbProxyEnabled">, IO<IndicatorData, "END">>;
 
-static MyNodeIoMessagingDict ios2;
+// static MyNodeIoMessagingDict ios2;
 
 char packedData[ios.size()] = {};
 static constexpr size_t SIZE = ios.size() * 2;
 char bufferToChar[SIZE + 1] = {};
 char *bufferToCharPtr = (char *)((long unsigned int)(bufferToChar));
 
-char packedData2[ios2.size()] = {};
-static constexpr size_t SIZE2 = ios2.size() * 2;
-char bufferToChar2[SIZE2 + 1] = {};
-char *bufferToCharPtr2 = (char *)((long unsigned int)(bufferToChar2));
+// char packedData2[ios2.size()] = {};
+// static constexpr size_t SIZE2 = ios2.size() * 2;
+// char bufferToChar2[SIZE2 + 1] = {};
+// char *bufferToCharPtr2 = (char *)((long unsigned int)(bufferToChar2));
 
 int main() {
   Human h{.age = 10, .name = {'1', '2', '3'}, .r = R::NONE};
 
-  IndicatorData id;
-  id.blinker = static_cast<Blinker>(0xff);
-  id.hazards = static_cast<Blinker>(0xaa);
-  ios2.set<"BEGIN">(id);
-  ios2.set<"MID1">(id);
-  ios2.set<"MID2">(id);
-  ios2.set<"END">(id);
+  // IndicatorData id;
+  // id.blinker = static_cast<Blinker>(0xff);
+  // id.hazards = static_cast<Blinker>(0xaa);
+  // ios2.set<"BEGIN">(id);
+  // ios2.set<"MID1">(id);
+  // ios2.set<"MID2">(id);
+  // ios2.set<"END">(id);
 
   std::cout << typeBufferTest.get() << std::endl;
   std::cout << "_________________________________________" << std::endl;
   std::cout << MyMessageDict1::getTypeString() << std::endl; /// C: works
   std::cout << "RESULT SIZE: " << sizeof(ios) << std::endl;
   std::cout << "_________________________________________" << std::endl;
-  std::cout << MyNodeIoMessagingDict::getTypeString() << std::endl;
+  // std::cout << MyNodeIoMessagingDict::getTypeString() << std::endl;
   std::cout << "_________________________________________" << std::endl;
   // ios2.printContents();
   // std::cout << "_________________________________________" << std::endl;

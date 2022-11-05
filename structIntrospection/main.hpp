@@ -172,10 +172,12 @@ template <typename T> static constexpr void typeChar(char *t, size_t d) {
     char ss[10];
     ss[0] = '/';
     auto sslen = constexpr_strcpy(&ss[1], num_to_string<size>::value);
-    constexpr_strcpy(&t[1], ss);
+    ss[1 + sslen] = ',';
+    ss[2 + sslen] = '\0';
+    constexpr_strcpy(&t[d + 1], ss);
     end = constexpr_strlen(t);
-    using arrElemType = std::remove_reference<decltype(*arr)>::type;
-    typeChar<arrElemType>(&t[end], d + 1);
+    using arrElemType = element_type_t<T>;
+    typeChar<arrElemType>(t, end);
   } else if constexpr (notstd::is_array<T>::value) {
     t[d] = 'A';
     constexpr auto size = std::tuple_size_v<T>;
@@ -189,9 +191,7 @@ template <typename T> static constexpr void typeChar(char *t, size_t d) {
     using arrElemType = element_type_t<T>;
     typeChar<arrElemType>(t, end);
   } else {
-    t[d] = '?';
-    // t[d+1] = '/';
-    // constexpr_strcpy(&t[d+2], num_to_string<sizeof(T)>::value);
+    t[d] = '*';
   }
   // end string depending on added length
   auto tEnd = constexpr_strlen(t);
@@ -218,11 +218,13 @@ public:
       return;
     } else {
       // / is the complex thing derived from Object?
-      constexpr bool x = requires(T && t, decltype(f) f) { t.template encode<0>(f); };
+      constexpr bool x = requires(T && t, decltype(f) f) {
+        t.template encode<0>(f);
+      };
       if constexpr (x) {
         /// We can instantiate it and look further
         T complex;
-        complex.template encode<0>(f);
+        complex.template encode<0, K>(f);
       } else {
         /// this is a garbage placeholder type
         char t[2] = {'*', '\0'};
@@ -253,8 +255,8 @@ public:
 template <typename T> class DefaultObjectWrapper {
 public:
   template <size_t I> static constexpr void encode(auto &&f) {
-    f(" { ?", num_to_string<I>::value,
-      " data:", num_to_string<sizeof(T)>::value, ":? }");
+    f(" { D", num_to_string<I>::value,
+      " data:", num_to_string<sizeof(T)>::value, ":* }");
   }
 };
 
@@ -356,12 +358,12 @@ struct UNKNOWN {
 #pragma pack(pop)
 
 #pragma pack(push, 1)
-struct A : Object<"A", Attribute<"v", int>>{
+struct A : Object<"A", Attribute<"v", int>> {
   int v = 1337;
 };
 #pragma pack(pop)
 #pragma pack(push, 1)
-struct B : Object<"B", Attribute<"a", A>>{
+struct B : Object<"B", Attribute<"a", A>> {
   A a;
 };
 #pragma pack(pop)
