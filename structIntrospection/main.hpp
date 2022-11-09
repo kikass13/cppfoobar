@@ -198,12 +198,23 @@ template <typename T> static constexpr void typeChar(char *t, size_t d) {
   t[tEnd] = '\0';
 }
 
-template <StringLiteral K, typename T> class Attribute {
-  static constexpr char const *k = K;
+template <StringLiteral K, size_t Bits> struct Field {
+  static constexpr void encode(auto &&f) { f(K, "/",num_to_string<Bits>::value, ","); }
+};
 
+template <typename... Fields> class BitField {
+public:
+  static constexpr void encode(auto &&f) {
+    f("bits:", num_to_string<sizeof(fields)>::value, ":");
+    std::apply([f](auto &&...field) { (field.encode(f), ...); }, fields);
+  }
+  static constexpr std::tuple<Fields...> fields{};
+};
+
+template <StringLiteral K, typename T> class Attribute {
 public:
   using internalType = T;
-  static constexpr const char *key() { return k; }
+  static constexpr const char *key() { return K; }
   static constexpr void encode(auto &&f) {
     if constexpr (!is_complex_datatype<T>::value) {
       /// simple type
@@ -266,7 +277,8 @@ public:
     char t[30];
     constexpr_memset(t, '\0', sizeof(t));
     typeChar<T>(t, 0);
-    f(" { D", num_to_string<I>::value, " data:", num_to_string<sizeof(T)>::value, ":", t, " }");
+    f(" { D", num_to_string<I>::value,
+      " data:", num_to_string<sizeof(T)>::value, ":", t, " }");
   }
 };
 
@@ -375,5 +387,18 @@ struct A : Object<"A", Attribute<"v", int>> {
 #pragma pack(push, 1)
 struct B : Object<"B", Attribute<"a", A>> {
   A a;
+};
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+struct Flags
+    : Object<"Flags", BitField<Field<"a", 1>, Field<"b", 1>, Field<"c", 1>,
+                               Field<"d", 1>, Field<"e", 1>, Field<"f", 3>>> {
+  uint8_t a : 1;
+  uint8_t b : 1;
+  uint8_t c : 1;
+  uint8_t d : 1;
+  uint8_t e : 1;
+  uint8_t f : 3;
 };
 #pragma pack(pop)

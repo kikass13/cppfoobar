@@ -154,7 +154,8 @@ class BinaryParser:
 
 def main():
     # string = "{ {Human age:4:i name:20:ab/20 r:1:B }  {Developer commits:4:I motivation:4:i }  {Xaxa  {Sub a:4:i b:8:Q } some:20:ai/5 arrarr:160:aaH/8/10  {Sub2 arr:4:i } arararar:400:aaaf/5/2/10 } }"
-    string = "{ {OTHER_NAME_FOR_SUB a:4:i b:8:Q }  {OTHER_NAME_FOR_SUB2 arr:32:a/8,i }  { UNKNOWN_OVEWRITE data:12:* } { BBBBB data:12:* } {bbbb  {a v:4:i } }  { BOOLEAN data:1:B } { INT data:4:i } {END a:4:i b:8:Q } }"
+    # string = "{ {OTHER_NAME_FOR_SUB a:4:i b:8:Q }  {OTHER_NAME_FOR_SUB2 arr:32:a/8,i }  { UNKNOWN_OVEWRITE data:12:* } { BBBBB data:12:* } {bbbb  {a v:4:i } }  { BOOLEAN data:1:B } { INT data:4:i } {END a:4:i b:8:Q } }"
+    string = "{ {OTHER_NAME_FOR_SUB a:4:i b:8:Q }  {OTHER_NAME_FOR_SUB2 arr:32:a/8,i }  { UNKNOWN_OVEWRITE data:12:* } { BBBBB data:12:* } {bbbb  {a v:4:i } }  {flags bits:1:a/1,b/1,c/1,d/1,e/1,f/3,}  {END a:4:i b:8:Q } }"
     lp = LayoutParser()
     lp.layout(string)
     lp.printLayout()

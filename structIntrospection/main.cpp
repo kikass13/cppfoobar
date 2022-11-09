@@ -36,7 +36,7 @@ static constexpr auto typeBufferTest =
 
 using MyMessageDict1 =
     IOList<IO<Sub, "OTHER_NAME_FOR_SUB">, IO<Sub2, "OTHER_NAME_FOR_SUB2">,
-           IO<UNKNOWN, "UNKNOWN_OVEWRITE">, IO<UNKNOWN, "BBBBB">, IO<B, "bbbb">,
+           IO<UNKNOWN, "UNKNOWN_OVEWRITE">, IO<UNKNOWN, "BBBBB">, IO<B, "bbbb">, IO<Flags, "flags">,
            IO<Sub, "END">>;
 static MyMessageDict1 ios;
 
