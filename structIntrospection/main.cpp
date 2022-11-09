@@ -7,6 +7,19 @@
 
 // #include "Types.hpp"
 
+static constexpr uint16_t crc16gsm(const char *data, size_t length,
+                                   size_t offset = 0) {
+  constexpr uint16_t xorout = 0xFFFF;
+  uint16_t crc = 0x0000;
+  for (size_t i = offset; i < length; i++) {
+    auto t = (crc >> 8) ^ data[i];
+    t = (t ^ t >> 4);
+    crc = (crc << 8) ^ (t << 12) ^ (t << 5) ^ (t);
+    crc &= 0xFFFF;
+  }
+  return crc ^ xorout;
+}
+
 /// from:
 /// https://stackoverflow.com/questions/6357031/how-do-you-convert-a-byte-array-to-a-hexadecimal-string-in-c/17147874#17147874
 static constexpr void btox(char *xp, const char *bb, int n) {
@@ -35,16 +48,16 @@ static MyMessageDict1 ios;
 //     IO<VehicleData, "externalVehicleData">, IO<SpsStateData, "spsStateData">,
 //     IO<ImuData, "processedImuData">, IO<OrientationData, "orientationData">,
 //     IO<DrawbarControllerData, "drawbarControllerData">,
-//     IO<bool, "externalTorqueCommandActive">, IO<float, "externalDriveTorque">,
-//     IO<int, "externalBrakePosition">, IO<DriverData, "driverData">,
-//     IO<DriveMotorInfo, "driveMotorInfoLeft">,
+//     IO<bool, "externalTorqueCommandActive">, IO<float,
+//     "externalDriveTorque">, IO<int, "externalBrakePosition">, IO<DriverData,
+//     "driverData">, IO<DriveMotorInfo, "driveMotorInfoLeft">,
 //     IO<DriveMotorInfo, "driveMotorInfoRight">, IO<IndicatorData, "MID1">,
 //     IO<bool, "externalVehicleStateFlagsEnable">,
 //     IO<VehicleStateFlags, "externalVehicleStateFlags">,
-//     IO<VehicleStateFlags, "vehicleStateFlags">, IO<DrivingMode, "drivingMode">,
-//     IO<NotificationData, "notifications">, IO<bool, "externalDcMotorEnable">,
-//     IO<DcMotorStateData, "dcMotorStates">, IO<IndicatorData, "MID2">,
-//     IO<DcMotorStateData, "externalDcMotorStates">,
+//     IO<VehicleStateFlags, "vehicleStateFlags">, IO<DrivingMode,
+//     "drivingMode">, IO<NotificationData, "notifications">, IO<bool,
+//     "externalDcMotorEnable">, IO<DcMotorStateData, "dcMotorStates">,
+//     IO<IndicatorData, "MID2">, IO<DcMotorStateData, "externalDcMotorStates">,
 //     IO<DcLimitSwitchesData, "externalLimitSwitches">,
 //     IO<DcLimitSwitchesData, "limitSwitches">, IO<BrakeInfo, "brakeInfo">,
 //     IO<BatteryStates, "batteryChargeStates">, IO<bool, "batteryLockEnable">,
@@ -74,10 +87,12 @@ int main() {
   // ios2.set<"MID1">(id);
   // ios2.set<"MID2">(id);
   // ios2.set<"END">(id);
-
+  auto crc1 = crc16gsm(MyMessageDict1::getTypeString(),
+                       MyMessageDict1::getTypeStringSize());
   std::cout << typeBufferTest.get() << std::endl;
   std::cout << "_________________________________________" << std::endl;
-  std::cout << MyMessageDict1::getTypeString() << std::endl; /// C: works
+  std::cout << std::hex << crc1 << std::dec << MyMessageDict1::getTypeString()
+            << std::endl; /// C: works
   std::cout << "RESULT SIZE: " << sizeof(ios) << std::endl;
   std::cout << "_________________________________________" << std::endl;
   // std::cout << MyNodeIoMessagingDict::getTypeString() << std::endl;
