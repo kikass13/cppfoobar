@@ -60,7 +60,7 @@ public:
       return T::template encode<I, K>(f);
     } else {
       /// encode type info of IO attribute as DefaultGarbageObject defined by T
-      return DefaultObjectWrapper<T>::template encode<I>(f);
+      return DefaultObjectWrapper<T>::template encode<I, K>(f);
     }
   }
   T data_;

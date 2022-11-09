@@ -254,9 +254,19 @@ public:
 
 template <typename T> class DefaultObjectWrapper {
 public:
+  template <size_t I, StringLiteral KEY>
+  static constexpr void encode(auto &&f) {
+    char t[30];
+    constexpr_memset(t, '\0', sizeof(t));
+    typeChar<T>(t, 0);
+    f(" { ", KEY, " data:", num_to_string<sizeof(T)>::value, ":", t, " }");
+  }
+
   template <size_t I> static constexpr void encode(auto &&f) {
-    f(" { D", num_to_string<I>::value,
-      " data:", num_to_string<sizeof(T)>::value, ":* }");
+    char t[30];
+    constexpr_memset(t, '\0', sizeof(t));
+    typeChar<T>(t, 0);
+    f(" { D", num_to_string<I>::value, " data:", num_to_string<sizeof(T)>::value, ":", t, " }");
   }
 };
 
