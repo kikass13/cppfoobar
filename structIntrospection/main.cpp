@@ -37,8 +37,8 @@ static constexpr auto typeBufferTest =
 using MyMessageDict1 =
     IOList<IO<Sub, "OTHER_NAME_FOR_SUB">,
            IO<Sub2, "OTHER_NAME_FOR_SUB2", ObjectReadWrite>,
-           IO<UNKNOWN, "UNKNOWN_OVEWRITE">, IO<UNKNOWN, "BBBBB">,
-           IO<B, "bbbb", ObjectReadWrite>, IO<Flags, "flags">,
+           IO<UNKNOWN, "UNKNOWN_OVEWRITE">, IO<UNKNOWN, "BBBBB">, IO<B, "bbbb">,
+           IO<B, "external_bbbb", ObjectReadWrite>, IO<Flags, "flags">,
            IO<Sub, "END", ObjectReadWrite>>;
 static MyMessageDict1 ios;
 
@@ -110,11 +110,13 @@ int main() {
   std::cout << "_________________________________________" << std::endl;
   std::cout << bufferToCharPtr << std::endl;
   std::cout << "_________________________________________" << std::endl;
-  char receiveBuf[100] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                          58,5,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  char receiveBuf[100] = {0,      0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                          0,      0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                          /**/ 0, 0, 58, 5, /**/
+                          0,      0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   ios.unpack(receiveBuf);
-  std::cout << "bbbbb: 1337 <-> " << ios.external<"bbbb">().a.v << std::endl;
+  std::cout << "external_bbbb: 1337 <-> " << ios.get<"external_bbbb">().a.v
+            << std::endl;
 
   /*
   std::cout << "_________________________________________" << std::endl;
