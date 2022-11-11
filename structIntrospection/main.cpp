@@ -35,9 +35,11 @@ static constexpr auto typeBufferTest =
 //     createTypeString<types::AllTypes, 5000>();
 
 using MyMessageDict1 =
-    IOList<IO<Sub, "OTHER_NAME_FOR_SUB">, IO<Sub2, "OTHER_NAME_FOR_SUB2">,
-           IO<UNKNOWN, "UNKNOWN_OVEWRITE">, IO<UNKNOWN, "BBBBB">, IO<B, "bbbb">, IO<Flags, "flags">,
-           IO<Sub, "END">>;
+    IOList<IO<Sub, "OTHER_NAME_FOR_SUB">,
+           IO<Sub2, "OTHER_NAME_FOR_SUB2", ObjectReadWrite>,
+           IO<UNKNOWN, "UNKNOWN_OVEWRITE">, IO<UNKNOWN, "BBBBB">,
+           IO<B, "bbbb", ObjectReadWrite>, IO<Flags, "flags">,
+           IO<Sub, "END", ObjectReadWrite>>;
 static MyMessageDict1 ios;
 
 // using MyNodeIoMessagingDict = IOList<
@@ -99,7 +101,7 @@ int main() {
   std::cout << "_________________________________________" << std::endl;
   // ios2.printContents();
   // std::cout << "_________________________________________" << std::endl;
-  /*
+
   std::cout << "1 RESULT SIZE: " << ios.size() << std::endl;
   std::cout << "1 CHAR BUF SIZE: " << SIZE + 1 << std::endl;
   ios.pack(packedData);
@@ -108,6 +110,13 @@ int main() {
   std::cout << "_________________________________________" << std::endl;
   std::cout << bufferToCharPtr << std::endl;
   std::cout << "_________________________________________" << std::endl;
+  char receiveBuf[100] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                          58,5,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  ios.unpack(receiveBuf);
+  std::cout << "bbbbb: 1337 <-> " << ios.external<"bbbb">().a.v << std::endl;
+
+  /*
   std::cout << "_________________________________________" << std::endl;
   std::cout << "2 RESULT SIZE: " << ios2.size() << std::endl;
   std::cout << "2 CHAR BUF SIZE: " << SIZE2 + 1 << std::endl;

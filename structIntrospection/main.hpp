@@ -199,7 +199,9 @@ template <typename T> static constexpr void typeChar(char *t, size_t d) {
 }
 
 template <StringLiteral K, size_t Bits> struct Field {
-  static constexpr void encode(auto &&f) { f(K, "/",num_to_string<Bits>::value, ","); }
+  static constexpr void encode(auto &&f) {
+    f(K, "/", num_to_string<Bits>::value, ",");
+  }
 };
 
 template <typename... Fields> class BitField {
@@ -249,14 +251,21 @@ public:
   }
 };
 
+struct ObjectRead;
+struct ObjectReadWrite;
+
 template <StringLiteral K, typename... Attributes> class Object {
   static constexpr char const *k = K;
 
 public:
   // static constexpr const char *key() { return k; }
-  template <size_t I, StringLiteral KEY = K>
+  template <size_t I, StringLiteral KEY = K, typename RW = ObjectRead>
   static constexpr void encode(auto &&f) {
-    f(" {", KEY, " ");
+    char dir[3] = {'r', 0, 0};
+    if constexpr (std::is_same<RW, ObjectReadWrite>::value) {
+      dir[1] = 'w';
+    }
+    f(" {", KEY, ":", dir, " ");
     std::tuple<Attributes...> attrs;
     std::apply([f](auto &&...a) { (a.encode(f), ...); }, attrs);
     f("} ");
@@ -265,12 +274,17 @@ public:
 
 template <typename T> class DefaultObjectWrapper {
 public:
-  template <size_t I, StringLiteral KEY>
+  template <size_t I, StringLiteral KEY, typename RW = ObjectRead>
   static constexpr void encode(auto &&f) {
+    char dir[3] = {'r', 0, 0};
+    if constexpr (std::is_same<RW, ObjectReadWrite>::value) {
+      dir[1] = 'w';
+    }
     char t[30];
     constexpr_memset(t, '\0', sizeof(t));
     typeChar<T>(t, 0);
-    f(" { ", KEY, " data:", num_to_string<sizeof(T)>::value, ":", t, " }");
+    f(" { ", KEY, ":", dir, " data:", num_to_string<sizeof(T)>::value, ":", t,
+      " }");
   }
 
   template <size_t I> static constexpr void encode(auto &&f) {

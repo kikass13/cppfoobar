@@ -15,12 +15,13 @@ template <StringLiteral T, class A, StringLiteral B> constexpr bool check() {
   return T == B;
 }
 
-template <StringLiteral T, template <typename, StringLiteral> typename Head,
-          typename A, StringLiteral B, typename... Tail>
+template <StringLiteral T,
+          template <typename, StringLiteral, typename RW> typename Head,
+          typename A, StringLiteral B, typename RW, typename... Tail>
 constexpr auto
-get_element_based_on_2nd_entry(std::tuple<Head<A, B>, Tail...> &t) {
+get_element_based_on_2nd_entry(std::tuple<Head<A, B, RW>, Tail...> &t) {
   if constexpr (check<T, A, B>()) {
-    return std::get<Head<A, B>>(t);
+    return std::get<Head<A, B, RW>>(t);
   } else {
     auto newTuple = std::apply(
         [](auto && /*e1*/, auto &&...args) { return std::make_tuple(args...); },
@@ -43,8 +44,9 @@ constexpr auto get_array_from_tuple(tuple_t &&t, F &&f) {
 
 } // namespace details
 
-template <class T, StringLiteral K> class IO {
+template <class T, StringLiteral K, class RW = ObjectRead> class IO {
 public:
+  using Direction = RW;
   constexpr IO() : data_{} {}
   constexpr ~IO(){};
   // void set(const T &d) { data_ = d; }
@@ -57,10 +59,10 @@ public:
     };
     if constexpr (x) {
       /// encode type info of IO attribute as Object defined by T
-      return T::template encode<I, K>(f);
+      return T::template encode<I, K, RW>(f);
     } else {
       /// encode type info of IO attribute as DefaultGarbageObject defined by T
-      return DefaultObjectWrapper<T>::template encode<I, K>(f);
+      return DefaultObjectWrapper<T>::template encode<I, K, RW>(f);
     }
   }
   T data_;
@@ -70,14 +72,13 @@ template <class... IOs> class IOList {
 public:
   constexpr IOList() {}
   template <typename T, StringLiteral K> const auto &get() {
-    return std::get<IO<T, K>>(ios_).data_;
+    return get<T, K>(ios_);
   }
-  template <StringLiteral K> const auto &get() {
-    auto someIO = details::get_element_based_on_2nd_entry<K>(ios_);
-    /// someIO will be a copy of the tuple element with the correct
-    /// type we need to get our correct ref with that type
-    return std::get<decltype(someIO)>(ios_).data_;
+  template <StringLiteral K> const auto &get() { return get<K>(ios_); }
+  template <StringLiteral K> const auto &external() {
+    return get<K>(external_);
   }
+
   template <typename T, StringLiteral K> void set(const auto &v) {
     std::get<IO<T, K>>(ios_).data_ = v;
   }
@@ -131,8 +132,22 @@ public:
     size_t c = 0;
     std::apply([&](auto &&...io) { ((pack_(dest, c, io)), ...); }, ios_);
   }
+  void unpack(char *dest) {
+    size_t c = 0;
+    std::apply([&](auto &&...io) { ((unpack_(dest, c, io)), ...); }, external_);
+  }
 
 private:
+  template <typename T, StringLiteral K> const auto &get(auto &&dict) {
+    return std::get<IO<T, K>>(dict).data_;
+  }
+  template <StringLiteral K> const auto &get(auto&& dict) {
+    auto someIO = details::get_element_based_on_2nd_entry<K>(dict);
+    /// someIO will be a copy of the tuple element with the correct
+    /// type we need to get our correct ref with that type
+    return std::get<decltype(someIO)>(dict).data_;
+  }
+
   void pack_(char *dest, size_t &c, auto &&io) {
     static constexpr size_t size = sizeof(io.data_);
     // std::cout << "pack: " << size << " at " << c << std::endl;
@@ -140,11 +155,40 @@ private:
     c += size;
   }
 
+  void unpack_(char *dest, size_t &c, auto &&io) {
+    static constexpr size_t size = sizeof(io.data_);
+    std::cout << "unpack: " << io.key() << " " << size << " at " << c
+              << std::endl;
+    std::memcpy(&io.data_, &dest[c], size);
+    c += size;
+  }
+
+  static constexpr auto getWriteableIos(auto /*t*/) { return std::make_tuple(); }
+  template <typename Head, typename... Tail>
+  static constexpr auto getWriteableIos(std::tuple<Head, Tail...> t) {
+    auto newTuple = std::apply(
+        [](auto && /*e1*/, auto &&...args) { return std::make_tuple(args...); },
+        t);
+    if constexpr (std::is_same_v<typename Head::Direction, ObjectReadWrite>) {
+      auto ioTuple = std::make_tuple(std::get<Head>(t));
+        return std::tuple_cat(ioTuple, getWriteableIos(newTuple));
+    } else {
+      return std::tuple_cat(getWriteableIos(newTuple));
+    }
+  }
+
+  static constexpr auto generateExternalInputIos() {
+    std::tuple<IOs...> t{};
+    auto result = getWriteableIos(t);
+    return result;
+  }
+
 private:
   static constexpr auto typeStringBuf =
       createTypeString<std::tuple<IOs...>, 5000>();
   static constexpr auto typeStringSize = constexpr_strlen(getTypeString());
   std::tuple<IOs...> ios_;
+  decltype(generateExternalInputIos()) external_ = generateExternalInputIos();
 };
 
 typedef IOList<> NoIOs;
