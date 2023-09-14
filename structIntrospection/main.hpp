@@ -251,6 +251,7 @@ public:
   }
 };
 
+struct ObjectNoSerialize;
 struct ObjectRead;
 struct ObjectReadWrite;
 
@@ -259,8 +260,11 @@ template <StringLiteral K, typename... Attributes> class Object {
 
 public:
   // static constexpr const char *key() { return k; }
-  template <size_t I, StringLiteral KEY = K, typename RW = ObjectRead>
+  template <size_t I, StringLiteral KEY = K, typename RW = ObjectNoSerialize>
   static constexpr void encode(auto &&f) {
+    if constexpr (std::is_same<RW, ObjectNoSerialize>::value) {
+      return;
+    }
     char dir[3] = {'r', 0, 0};
     if constexpr (std::is_same<RW, ObjectReadWrite>::value) {
       dir[1] = 'w';
@@ -274,8 +278,11 @@ public:
 
 template <typename T> class DefaultObjectWrapper {
 public:
-  template <size_t I, StringLiteral KEY, typename RW = ObjectRead>
+  template <size_t I, StringLiteral KEY, typename RW = ObjectNoSerialize>
   static constexpr void encode(auto &&f) {
+    if constexpr (std::is_same<RW, ObjectNoSerialize>::value) {
+      return;
+    }
     char dir[3] = {'r', 0, 0};
     if constexpr (std::is_same<RW, ObjectReadWrite>::value) {
       dir[1] = 'w';

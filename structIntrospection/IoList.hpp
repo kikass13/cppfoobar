@@ -44,7 +44,7 @@ constexpr auto get_array_from_tuple(tuple_t &&t, F &&f) {
 
 } // namespace details
 
-template <class T, StringLiteral K, class RW = ObjectRead> class IO {
+template <class T, StringLiteral K, class RW = ObjectNoSerialize> class IO {
 public:
   using Direction = RW;
   constexpr IO() : data_{} {}
@@ -52,6 +52,12 @@ public:
   // void set(const T &d) { data_ = d; }
   // const T &get() { return data_; }
   static constexpr auto key() { return K.buf; }
+  bool static constexpr isReadable() {
+    return !std::is_same_v<Direction, ObjectNoSerialize>;
+  }
+  bool static constexpr isWriteable() {
+    return std::is_same_v<Direction, ObjectReadWrite>;
+  }
   template <size_t I> static constexpr void encode(auto f) {
     using FType = decltype(f);
     constexpr bool x = requires(T && t, FType f) {
@@ -123,28 +129,45 @@ public:
     // return c;
     return sizeof(std::tuple<IOs...>);
   }
+  static constexpr size_t externalReadSize() {
+    return sizeof(ExternalReadIos);
+  }
+  static constexpr size_t externalWriteSize() {
+    return sizeof(ExternalWriteIos);
+  }
 
   const char *data() const {
     const char *ptr = reinterpret_cast<const char *>(std::get<0>(ios_));
     return ptr;
   }
 
-  void pack(char *dest) {
+  size_t pack(char *dest) {
     size_t c = 0;
-    std::apply([&](auto &&...io) { ((pack_(dest, c, io)), ...); }, ios_);
+    /// when reading everything is possible
+    // std::apply([&](auto &&...io) { ((pack_(dest, c, io)), ...); }, ios_);
+    /// when only defined ios can be read
+    ExternalReadIos external{};
+    std::apply([&](auto &&...io) { ((pack_(dest, c, io)), ...); }, external);
+    return c;
+
   }
-  void unpack(char *dest) {
+  size_t unpack(char *dest) {
     size_t c = 0;
     ExternalWriteIos external{};
     std::apply([&](auto &&...io) { ((unpack_(dest, c, io)), ...); }, external);
+    return c;
   }
 
 private:
   void pack_(char *dest, size_t &c, auto &&io) {
     static constexpr size_t size = sizeof(io.data_);
-    // std::cout << "pack: " << size << " at " << c << std::endl;
-    std::memcpy(&dest[c], &io.data_, size);
-    c += size;
+    using TargetIoType = std::remove_reference_t<decltype(io)>;
+    auto targetIos = &std::get<TargetIoType>(ios_);
+    std::cout << "pack: " << targetIos->key() << size << " at " << c << std::endl;
+    if constexpr (TargetIoType::isReadable()){
+      std::memcpy(&dest[c], &io.data_, size);
+      c += size;
+    }
   }
 
   void unpack_(char *dest, size_t &c, auto &&io) {
@@ -165,11 +188,27 @@ private:
     auto newTuple = std::apply(
         [](auto && /*e1*/, auto &&...args) { return std::make_tuple(args...); },
         t);
-    if constexpr (std::is_same_v<typename Head::Direction, ObjectReadWrite>) {
+    if constexpr (Head::isWriteable()) {
       auto ioTuple = std::make_tuple(std::get<Head>(t));
       return std::tuple_cat(ioTuple, getWriteableIos(newTuple));
-    } else {
+    }
+    else{
       return std::tuple_cat(getWriteableIos(newTuple));
+    }
+  }
+
+  static constexpr auto getReadableIos(auto /*t*/) { return std::make_tuple(); }
+  template <typename Head, typename... Tail>
+  static constexpr auto getReadableIos(std::tuple<Head, Tail...> t) {
+    auto newTuple = std::apply(
+        [](auto && /*e1*/, auto &&...args) { return std::make_tuple(args...); },
+        t);
+    if constexpr (Head::isReadable()) {
+      auto ioTuple = std::make_tuple(std::get<Head>(t));
+      return std::tuple_cat(ioTuple, getReadableIos(newTuple));
+    }
+    else{
+      return std::tuple_cat(getReadableIos(newTuple));    
     }
   }
 
@@ -178,12 +217,18 @@ private:
     auto result = getWriteableIos(t);
     return result;
   }
+  static constexpr auto generateExternalOutputIos() {
+    std::tuple<IOs...> t{};
+    auto result = getReadableIos(t);
+    return result;
+  }
 
 private:
   static constexpr auto typeStringBuf =
       createTypeString<std::tuple<IOs...>, 5000>();
   static constexpr auto typeStringSize = constexpr_strlen(getTypeString());
   std::tuple<IOs...> ios_;
+  using ExternalReadIos = decltype(generateExternalOutputIos());
   using ExternalWriteIos = decltype(generateExternalInputIos());
 };
 

@@ -35,7 +35,7 @@ static constexpr auto typeBufferTest =
 //     createTypeString<types::AllTypes, 5000>();
 
 using MyMessageDict1 =
-    IOList<IO<Sub, "OTHER_NAME_FOR_SUB">,
+    IOList<IO<Sub, "OTHER_NAME_FOR_SUB", ObjectRead>,
            IO<Sub2, "OTHER_NAME_FOR_SUB2", ObjectReadWrite>,
            IO<UNKNOWN, "UNKNOWN_OVEWRITE">, IO<UNKNOWN, "BBBBB">, IO<B, "bbbb">,
            IO<B, "external_bbbb", ObjectReadWrite>, IO<Flags, "flags">,
@@ -69,10 +69,10 @@ static MyMessageDict1 ios;
 
 // static MyNodeIoMessagingDict ios2;
 
-char packedData[ios.size()] = {};
-static constexpr size_t SIZE = ios.size() * 2;
-char bufferToChar[SIZE + 1] = {};
-char *bufferToCharPtr = (char *)((long unsigned int)(bufferToChar));
+char packedDataExternalRead[ios.externalReadSize()] = {};
+static constexpr size_t READSIZE = ios.externalReadSize() * 2;
+char readbufferToChar[READSIZE + 1] = {};
+char *readbufferToCharPtr = (char *)((long unsigned int)(readbufferToChar));
 
 // char packedData2[ios2.size()] = {};
 // static constexpr size_t SIZE2 = ios2.size() * 2;
@@ -102,18 +102,23 @@ int main() {
   // ios2.printContents();
   // std::cout << "_________________________________________" << std::endl;
 
-  std::cout << "1 RESULT SIZE: " << ios.size() << std::endl;
-  std::cout << "1 CHAR BUF SIZE: " << SIZE + 1 << std::endl;
-  ios.pack(packedData);
-  btox(bufferToCharPtr, packedData, SIZE); /// faster
-  bufferToCharPtr[SIZE] = '\0';
+  std::cout << "1 RESULT SIZE: " << ios.externalReadSize() << std::endl;
+  std::cout << "1 CHAR BUF SIZE: " << READSIZE + 1 << std::endl;
+  /// pack ios objects (that have their READABLE flag active) into buffer
+  size_t n = ios.pack(packedDataExternalRead);
+  if(n > 0){
+    /// we have actually
+    btox(readbufferToCharPtr, packedDataExternalRead, READSIZE); /// faster
+    readbufferToCharPtr[READSIZE] = '\0';
+  }
   std::cout << "_________________________________________" << std::endl;
-  std::cout << bufferToCharPtr << std::endl;
+  std::cout << readbufferToCharPtr << std::endl;
   std::cout << "_________________________________________" << std::endl;
   char receiveBuf[100] = {0,      0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                           0,      0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                          /**/ 0, 0, 58, 5, /**/
+                          /**/ 0, 0, 58, 5, /**/ // 58, 5 results in 1338
                           0,      0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  /// unpack ios objects from buffer (that have their WRITEABLE flag active)
   ios.unpack(receiveBuf);
   std::cout << "external_bbbb: 1337 <-> " << ios.get<"external_bbbb">().a.v
             << std::endl;
