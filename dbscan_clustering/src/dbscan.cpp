@@ -5,6 +5,7 @@
 
 #include <type_traits>
 #include <vector>
+#include <iostream>
 
 // And this is the "dataset to kd-tree" adaptor class:
 
@@ -79,14 +80,17 @@ auto dbscan(const Adaptor& adapt, float eps, int min_pts)
     const auto n_points = adapt.kdtree_get_point_count();
     auto visited  = std::vector<bool>(n_points);
     auto clusters = std::vector<std::vector<size_t>>();
-    auto matches  = std::vector<std::pair<size_t, float>>();
-    auto sub_matches = std::vector<std::pair<size_t, float>>();
+    // auto matches  = std::vector<std::pair<size_t, float>>();
+    // auto sub_matches = std::vector<std::pair<size_t, float>>();
+    auto matches = std::vector<ResultItem<unsigned int, float>>();
+    auto sub_matches = std::vector<ResultItem<unsigned int, float>>();
+
 
     for(size_t i = 0; i < n_points; i++)
     {
         if (visited[i]) continue;
 
-        index.radiusSearch(adapt.elem_ptr(i), eps, matches, SearchParams(32, 0.f, false));
+        index.radiusSearch(adapt.elem_ptr(i), eps, matches, SearchParameters(0.0f, false));
         if (matches.size() < static_cast<size_t>(min_pts)) continue;
         visited[i] = true;
 
@@ -99,7 +103,7 @@ auto dbscan(const Adaptor& adapt, float eps, int min_pts)
             if (visited[nb_idx]) continue;
             visited[nb_idx] = true;
 
-            index.radiusSearch(adapt.elem_ptr(nb_idx), eps, sub_matches, SearchParams(32, 0.f, false));
+            index.radiusSearch(adapt.elem_ptr(nb_idx), eps, sub_matches, SearchParameters(0.0f, false));
 
             if (sub_matches.size() >= static_cast<size_t>(min_pts))
             {
@@ -107,11 +111,84 @@ auto dbscan(const Adaptor& adapt, float eps, int min_pts)
             }
             cluster.push_back(nb_idx);
         }
+        // std::cout << "cluster X" << std::endl;
         clusters.emplace_back(std::move(cluster));
     }
     sort_clusters(clusters);
     return clusters;
 }
+
+
+
+// Function to standardize a vector of 3D points
+std::vector<point3> standardizePoints(const std::span<const point3> &points) {
+  // Calculate the means for each coordinate (x, y, z)
+  double meanX = 0.0;
+  double meanY = 0.0;
+  double meanZ = 0.0;
+
+  for (const point3 &point : points) {
+    meanX += point.x;
+    meanY += point.y;
+    meanZ += point.z;
+  }
+
+  meanX /= points.size();
+  meanY /= points.size();
+  meanZ /= points.size();
+
+  // Calculate the standard deviations for each coordinate
+  double stdDevX = 0.0;
+  double stdDevY = 0.0;
+  double stdDevZ = 0.0;
+
+  for (const point3 &point : points) {
+    // std::cout << " p:      " << point.x << ", " << point.y << ", " << point.z
+    //           << std::endl;
+
+    stdDevX += pow(point.x - meanX, 2);
+    stdDevY += pow(point.y - meanY, 2);
+    stdDevZ += pow(point.z - meanZ, 2);
+  }
+
+  stdDevX = sqrt(stdDevX / points.size());
+  stdDevY = sqrt(stdDevY / points.size());
+  stdDevZ = sqrt(stdDevZ / points.size());
+
+  //   std::cout <<
+  //   "==============================================================="
+  //                "============="
+  //             << std::endl;
+  //   std::cout <<
+  //   "==============================================================="
+  //                "============="
+  //             << std::endl;
+  //   std::cout <<
+  //   "==============================================================="
+  //                "============="
+  //             << std::endl;
+  //   std::cout <<
+  //   "==============================================================="
+  //                "============="
+  //             << std::endl;
+
+  // Standardize the 3D points
+  std::vector<point3> standardizedPoints;
+  for (const point3 &point : points) {
+    point3 standardizedPoint;
+    standardizedPoint.x = (point.x - meanX) / stdDevX;
+    standardizedPoint.y = (point.y - meanY) / stdDevY;
+    standardizedPoint.z = (point.z - meanZ) / stdDevZ;
+    // std::cout << " sd:      " << standardizedPoint.x << ", "
+    //           << standardizedPoint.y << ", " << standardizedPoint.z
+    //           << std::endl;
+    standardizedPoints.push_back(standardizedPoint);
+  }
+
+  return standardizedPoints;
+}
+
+
 
 
 auto dbscan(const std::span<const point2>& data, float eps, int min_pts) -> std::vector<std::vector<size_t>>
@@ -121,10 +198,13 @@ auto dbscan(const std::span<const point2>& data, float eps, int min_pts) -> std:
     return dbscan<2>(adapt, eps, min_pts);
 }
 
+auto dbscan(const std::span<const point3> &data, float eps, int min_pts) -> std::vector<std::vector<size_t>> {
 
-auto dbscan(const std::span<const point3>& data, float eps, int min_pts) -> std::vector<std::vector<size_t>>
-{
-    const auto adapt = adaptor<point3>(data);
+  auto standartizedData = standardizePoints(data);
+  const auto adapt = adaptor<point3>(standartizedData);
+//   const auto adapt = adaptor<point3>(data);
 
-    return dbscan<3>(adapt, eps, min_pts);
+  return dbscan<3>(adapt, eps, min_pts);
 }
+
+
