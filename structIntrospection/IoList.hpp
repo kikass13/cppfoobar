@@ -129,11 +129,11 @@ public:
     // return c;
     return sizeof(std::tuple<IOs...>);
   }
-  static constexpr size_t externalReadSize() {
-    return sizeof(ExternalReadIos);
+  static constexpr size_t sizeOfReadableIos() {
+    return sizeof(ReadableIosByExteral);
   }
-  static constexpr size_t externalWriteSize() {
-    return sizeof(ExternalWriteIos);
+  static constexpr size_t sizeOfWritableIos() {
+    return sizeof(WritableIosByExternal);
   }
 
   const char *data() const {
@@ -146,14 +146,14 @@ public:
     /// when reading everything is possible
     // std::apply([&](auto &&...io) { ((pack_(dest, c, io)), ...); }, ios_);
     /// when only defined ios can be read
-    ExternalReadIos external{};
+    ReadableIosByExteral external{};
     std::apply([&](auto &&...io) { ((pack_(dest, c, io)), ...); }, external);
     return c;
 
   }
   size_t unpack(char *dest) {
     size_t c = 0;
-    ExternalWriteIos external{};
+    WritableIosByExternal external{};
     std::apply([&](auto &&...io) { ((unpack_(dest, c, io)), ...); }, external);
     return c;
   }
@@ -163,7 +163,7 @@ private:
     static constexpr size_t size = sizeof(io.data_);
     using TargetIoType = std::remove_reference_t<decltype(io)>;
     auto targetIos = &std::get<TargetIoType>(ios_);
-    std::cout << "pack: " << targetIos->key() << size << " at " << c << std::endl;
+    std::cout << "pack: " << targetIos->key() << " [" << size << "] at " << c << std::endl;
     if constexpr (TargetIoType::isReadable()){
       std::memcpy(&dest[c], &io.data_, size);
       c += size;
@@ -174,7 +174,7 @@ private:
     static constexpr size_t size = sizeof(io.data_);
     using TargetIoType = std::remove_reference_t<decltype(io)>;
     auto targetIos = &std::get<TargetIoType>(ios_);
-    std::cout << "unpack: " << targetIos->key() << " " << size << " at " << c
+    std::cout << "unpack: " << targetIos->key() << " [" << size << "] at " << c
               << std::endl;
     std::memcpy(targetIos, &dest[c], size);
     c += size;
@@ -212,12 +212,12 @@ private:
     }
   }
 
-  static constexpr auto generateExternalInputIos() {
+  static constexpr auto generateWritableIos() {
     std::tuple<IOs...> t{};
     auto result = getWriteableIos(t);
     return result;
   }
-  static constexpr auto generateExternalOutputIos() {
+  static constexpr auto generateReadableIos() {
     std::tuple<IOs...> t{};
     auto result = getReadableIos(t);
     return result;
@@ -228,8 +228,8 @@ private:
       createTypeString<std::tuple<IOs...>, 5000>();
   static constexpr auto typeStringSize = constexpr_strlen(getTypeString());
   std::tuple<IOs...> ios_;
-  using ExternalReadIos = decltype(generateExternalOutputIos());
-  using ExternalWriteIos = decltype(generateExternalInputIos());
+  using ReadableIosByExteral = decltype(generateReadableIos());
+  using WritableIosByExternal = decltype(generateWritableIos());
 };
 
 typedef IOList<> NoIOs;

@@ -69,8 +69,8 @@ static MyMessageDict1 ios;
 
 // static MyNodeIoMessagingDict ios2;
 
-char packedDataExternalRead[ios.externalReadSize()] = {};
-static constexpr size_t READSIZE = ios.externalReadSize() * 2;
+char packedDataExternalRead[ios.sizeOfReadableIos()] = {};
+static constexpr size_t READSIZE = ios.sizeOfReadableIos() * 2;
 char readbufferToChar[READSIZE + 1] = {};
 char *readbufferToCharPtr = (char *)((long unsigned int)(readbufferToChar));
 
@@ -95,14 +95,15 @@ int main() {
   std::cout << "_________________________________________" << std::endl;
   std::cout << std::hex << crc1 << std::dec << MyMessageDict1::getTypeString()
             << std::endl; /// C: works
-  std::cout << "RESULT SIZE: " << sizeof(ios) << std::endl;
+  std::cout << "IOS SIZE: " << sizeof(ios) << std::endl;
   std::cout << "_________________________________________" << std::endl;
   // std::cout << MyNodeIoMessagingDict::getTypeString() << std::endl;
   std::cout << "_________________________________________" << std::endl;
   // ios2.printContents();
   // std::cout << "_________________________________________" << std::endl;
 
-  std::cout << "1 RESULT SIZE: " << ios.externalReadSize() << std::endl;
+  std::cout << "1 RESULT EXT READ SIZE: " << ios.sizeOfReadableIos() << std::endl;
+  std::cout << "1 RESULT EXT WRITE SIZE: " << ios.sizeOfWritableIos() << std::endl;
   std::cout << "1 CHAR BUF SIZE: " << READSIZE + 1 << std::endl;
   /// pack ios objects (that have their READABLE flag active) into buffer
   size_t n = ios.pack(packedDataExternalRead);

@@ -206,6 +206,7 @@ template <StringLiteral K, size_t Bits> struct Field {
 
 template <typename... Fields> class BitField {
 public:
+  template <typename RWOVERWRITE>
   static constexpr void encode(auto &&f) {
     f("bits:", num_to_string<sizeof(fields)>::value, ":");
     std::apply([f](auto &&...field) { (field.encode(f), ...); }, fields);
@@ -213,10 +214,19 @@ public:
   static constexpr std::tuple<Fields...> fields{};
 };
 
+struct ObjectNoSerialize;
+struct ObjectRead;
+struct ObjectReadWrite;
+
 template <StringLiteral K, typename T> class Attribute {
 public:
   using internalType = T;
   static constexpr const char *key() { return K; }
+
+  /// this RWOVERWRITE is only useful, when the attribute itself is an object
+  /// because the object does not have a RW modifier (as it is nested inside the rw modifier o the parent type)
+  /// so we just forward it here, so that child attributes are correctly parsed
+  template<typename RWOVERWRITE=ObjectNoSerialize> 
   static constexpr void encode(auto &&f) {
     if constexpr (!is_complex_datatype<T>::value) {
       /// simple type
@@ -237,7 +247,7 @@ public:
       if constexpr (x) {
         /// We can instantiate it and look further
         T complex;
-        complex.template encode<0, K>(f);
+        complex.template encode<0, K, RWOVERWRITE>(f);
       } else {
         /// this is a garbage placeholder type
         char t[2] = {'*', '\0'};
@@ -250,10 +260,6 @@ public:
     }
   }
 };
-
-struct ObjectNoSerialize;
-struct ObjectRead;
-struct ObjectReadWrite;
 
 template <StringLiteral K, typename... Attributes> class Object {
   static constexpr char const *k = K;
@@ -271,7 +277,10 @@ public:
     }
     f(" {", KEY, ":", dir, " ");
     std::tuple<Attributes...> attrs;
-    std::apply([f](auto &&...a) { (a.encode(f), ...); }, attrs);
+    // char ss[4];
+    // auto sslen = constexpr_strcpy(ss, num_to_string<sizeof(attrs)>::value);
+    // f(" {", KEY, ":", dir, " :::", ss, "::: ");
+    std::apply([f](auto &&...a) { (a.template encode<RW>(f), ...); }, attrs);
     f("} ");
   }
 };
